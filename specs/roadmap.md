@@ -107,6 +107,11 @@ spec before implementation.
 - Server Action writes the `Appointment`; validation prevents double-booking the
   same slot and rejects past times.
 - Confirmation page, and the appointment appears on the agent's case file.
+- **Pick a rendering strategy first.** Pages are prerendered at build time today,
+  so a page that reads written data serves stale HTML until the next build —
+  verified in Phase 1, recorded as
+  [D12](2026-08-17-the-four-nouns/requirements.md#d12--the-home-page-stays-statically-prerendered-and-phase-6-is-told-why).
+  This phase and Phase 7 are where that stops being correct.
 
 **Exit:** Playwright books an appointment end to end and finds it on the case
 file; conflicting and past-dated bookings are refused with clear messages. The
