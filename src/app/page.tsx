@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getCurrentNotice } from "@/server/notices";
 
-// Placeholder page for task group 2 — proves the styling toolchain renders.
-// Task group 4 replaces the body copy with a row read from the database, and
-// task group 5 turns this into the clinic's home page.
-export default function Home() {
+// Task group 5 turns this into the clinic's home page. For now it proves the
+// path from database to rendered page, which is what Phase 0 is for.
+export default async function Home() {
+  const notice = await getCurrentNotice();
+
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 items-center px-6 py-16">
       <Card className="w-full">
@@ -12,7 +14,9 @@ export default function Home() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            The styling toolchain is wired: Tailwind and one shadcn/ui primitive.
+            {notice
+              ? notice.message
+              : "The board is bare. Someone has taken the notices down again."}
           </p>
         </CardContent>
       </Card>
