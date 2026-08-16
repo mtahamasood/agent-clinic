@@ -133,7 +133,6 @@ clicking through.
 
 - Marketing-grade landing treatment for Steve: typography, spacing, motion where
   it earns its place.
-- Accessibility pass: keyboard paths, focus order, AA contrast.
 - Metadata, favicon, social preview.
 - Deploy **both** ways: self-hosted (`next build` + `next start`) against a local
   libSQL file, and Vercel against a hosted Turso database.
