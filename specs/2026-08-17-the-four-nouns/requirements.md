@@ -410,7 +410,7 @@ seeded queries" — with the no-hidden-setup habit inherited from Phase 0's
 [plan.md](../2026-08-16-walking-skeleton/plan.md) 6.1 and the clean-clone run in
 its [validation.md](../2026-08-16-walking-skeleton/validation.md), section A.
 
-### D12 — `/` stays statically prerendered, and Phase 6 is told why that ends
+### D12 — The home page stays statically prerendered, and Phase 6 is told why
 
 `next build` prerenders `/` at build time, so the production server hands out a
 page whose ailment was read during the build. Phase 1 leaves it that way and
