@@ -78,8 +78,8 @@ Bounded by D5.
     clinic's notice board rather than a loose card.
 5.4 Add no navigation, in the header or the footer. Routes beyond `/` do not
     exist until Phase 2, and a link to a 404 is worse than no link (D5).
-5.5 Check heading hierarchy — exactly one `<h1>` — and AA contrast on every text
-    colour used.
+5.5 Check heading hierarchy — exactly one `<h1>`. (This task's AA-contrast half
+    was struck with the accessibility requirement — D10.)
 
 **Ends with:** a first-time viewer can say what the product is, and the notice on
 screen still comes from the database.

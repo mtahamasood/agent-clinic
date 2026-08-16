@@ -52,7 +52,7 @@ Inherited by every phase from
 | B2 | ESLint | Clean |
 | B3 | `prettier --check .` | Clean |
 | B4 | Vitest | The one unit test passes |
-| B5 | Playwright | The suite passes **against the production build** (D3): the clinic name and the seeded notice, the three C8 landmarks, and the C10 contrast measurement |
+| B5 | Playwright | The suite passes **against the production build** (D3): the clinic name and the seeded notice, and the three C8 landmarks |
 | B6 | CI | A green run on this branch, executing B1–B5 (D4) |
 
 B6 subsumes B1–B5, but they are run locally first. CI is the gate, not the
@@ -73,7 +73,7 @@ discovery mechanism.
 | C7 | The product is identifiable | Someone seeing `/` for the first time, with no context, can say what AgentClinic is (D5) |
 | C8 | Document structure | Exactly one `<h1>`; `banner`, `main`, and `contentinfo` landmarks all present, and all three supplied by the root layout rather than by the page (D8); `<html lang>` set |
 | C9 | No dead links | Nothing on the page navigates to a route that does not exist yet (D5). Header and footer are both link-free by construction (D8) |
-| C10 | Contrast | Every text colour used meets WCAG AA against its background. Measured in `tests/contrast.spec.ts`, not eyeballed (D9). Light theme only — the preset's `.dark` class is never applied in Phase 0 |
+| C10 | Contrast | **Struck** by owner decision, 2026-08-17 (D10): the requirement traced to no stakeholder and no mission statement. `tests/contrast.spec.ts` was deleted with it. The row remains so C1–C9 keep their numbers |
 
 ---
 
@@ -113,8 +113,8 @@ regardless of how green the tests are.
 
 ## Merge criteria
 
-Merge when **A1–A8, B1–B6, C1–C10, and D1–D5 all pass, and no condition in E
-holds.**
+Merge when **A1–A8, B1–B6, C1–C9, and D1–D5 all pass, and no condition in E
+holds.** (C10 is struck — D10.)
 
 Record the result of section A in the PR description — including the machine and
 Node version it was run on. A clean-clone claim with no evidence behind it is the

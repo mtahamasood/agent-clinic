@@ -49,9 +49,6 @@ tests/            # Playwright specs; unit tests sit next to their source
 **Server-first.** Components are Server Components by default. `"use client"` is
 opt-in, per component, and only when there is genuine interactivity.
 
-**Accessibility.** Keyboard navigable, labelled form controls, visible focus
-rings, WCAG AA contrast. Checked in the Playwright pass, not by vibes.
-
 ## Deployment
 
 AgentClinic must be fully deployable **two ways**, and neither is the "real" one.
@@ -109,12 +106,14 @@ Every phase in [roadmap.md](roadmap.md) is done only when all of these pass:
 ## Requirement provenance
 
 No requirement enters this project without a written source. This section exists
-because one did: the accessibility convention above and the Phase 8
-accessibility pass both assert WCAG AA contrast, yet no stakeholder in
-`README.md` asked for accessibility and `mission.md` never mentions it. The
+because one did: an accessibility convention (formerly in Conventions above) and
+a Phase 8 accessibility pass asserted WCAG AA contrast, yet no stakeholder in
+`README.md` asked for accessibility and `mission.md` never mentioned it. The
 requirement produced real work — a validation check and a test — before anyone
-could say who wanted it. What becomes of that requirement is a separate owner
-decision; this section makes sure the pattern cannot repeat.
+could say who wanted it. The owner struck it and everything downstream on
+2026-08-17 (D10 in the Phase 0 spec, registered in
+[mission.md](mission.md#owner-decisions)); this section makes sure the pattern
+cannot repeat.
 
 **The rule.** Every normative statement — anything asserting the product or the
 process *must* be some way — carries exactly one of three sources:
@@ -143,9 +142,10 @@ new requirements"; it is "no anonymous ones."
 - `.github/pull_request_template.md` asks where every new requirement came
   from. Prose the linter cannot parse gets caught by the author having to
   answer that question in writing.
-- `CLAUDE.md` instructs coding agents to stop and ask rather than write an
-  unsourced requirement into `specs/`. An agent that wants a new quality bar
-  proposes it; it does not install it.
+- The specs are the only agent-facing instruction surface: `AGENTS.md` and
+  `CLAUDE.md` carry no project content and never will (owner decision,
+  2026-08-17, in [mission.md](mission.md#owner-decisions)). An agent that wants
+  a new quality bar proposes it to the owner; it does not install it.
 - A requirement discovered without a source is a spec bug. The fix is to
   attribute it or delete it — never to keep it silently.
 

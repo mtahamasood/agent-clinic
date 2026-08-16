@@ -22,7 +22,7 @@ deferred to Phase 1, it is.
 | Layout | Root layout composes `ClinicHeader`, a `<main>` landmark holding the container width, and a link-free `ClinicFooter` (D8) |
 | Page | `/` names the clinic, carries a one-line tagline, and renders one row read from the database |
 | Unit tests | Vitest installed, one passing test |
-| E2E tests | Playwright against a **production build**: the seeded page, the C8 landmarks, and the C10 contrast measurement (D9) |
+| E2E tests | Playwright against a **production build**: the seeded page and the C8 landmarks |
 | Quality | ESLint + Prettier configured and clean |
 | CI | GitHub Actions running every quality gate on push |
 | Docs | `README.md` documents run / build / test / seed for both deploy targets |
@@ -45,8 +45,8 @@ Not deferred forever — deferred to a named phase, so nobody has to re-argue it
 ## Decisions
 
 Four questions were open before this spec was written; a fifth was added when the
-home page came into scope, and D6–D9 were recorded during implementation. All
-nine are now closed.
+home page came into scope, and D6–D10 were recorded during implementation. All
+ten are closed; D9 was struck by D10 and stands only as audit trail.
 
 ### D1 — The throwaway model is genuinely throwaway
 
@@ -247,6 +247,10 @@ already placed the `<main>` landmark and container width in the root layout.
 
 ### D9 — Contrast is measured in the Playwright pass, with no new dependency
 
+> **Struck by D10, 2026-08-17.** The requirement this decision implemented was
+> itself unattributed and has been removed, along with `tests/contrast.spec.ts`.
+> The record below is kept unedited as audit trail.
+
 Check C10 is enforced by `tests/contrast.spec.ts`, which walks every text-bearing
 element on `/`, composites foreground and background to sRGB, and asserts the
 WCAG AA ratio — 4.5:1, or 3:1 for large text.
@@ -286,6 +290,35 @@ pending owner decision recorded in
 [mission.md](../mission.md#owner-decisions), and this record deliberately does
 not settle it. D9 closes the gap between what the constitution claimed and
 what the tests measured — it does not adjudicate the claim.
+
+### D10 — The accessibility requirement is struck
+
+The owner's ruling on the incident that created the provenance rule. Removed in
+full:
+
+- The Accessibility convention in [tech-stack.md](../tech-stack.md) — keyboard
+  navigable, labelled form controls, visible focus rings, WCAG AA contrast.
+- The "Accessibility pass" line in Phase 8 of [roadmap.md](../roadmap.md).
+- Check C10 in [validation.md](validation.md), the AA-contrast half of plan
+  task 5.5, decision D9, and `tests/contrast.spec.ts`.
+
+*Rationale:* traced in full, the requirement had no source — no stakeholder in
+`README.md` asked for accessibility and `mission.md` never mentioned it. Under
+the provenance rule an unattributed requirement is attributed or deleted; the
+owner chose deletion.
+
+*What survives:* check C8 — heading hierarchy, the `banner`/`main`/`contentinfo`
+landmarks, `<html lang>` — because it traces to document structure in
+[plan.md](plan.md) 5.1 and the layout decision D8, not to the struck
+convention. Likewise the shadcn/ui row in the Locked in table: "accessible" there
+describes what Radix primitives are, sourced to Steve's bar, not a requirement
+this project added.
+
+*Reintroduction path:* accessibility may return, but only as a dated owner
+decision or a stakeholder ask in the brief — never again as a default.
+
+*Source:* owner decision, 2026-08-17 — registered in
+[mission.md](../mission.md#owner-decisions).
 
 ## Constraints inherited
 
