@@ -103,6 +103,35 @@ Every phase in [roadmap.md](roadmap.md) is done only when all of these pass:
 - The **production build** (`next build` + `next start`) runs locally against a
   local libSQL file — not just `next dev`.
 
+## Judgement checks
+
+Some checks cannot be automated. "Does the satire land" and "can a first-time
+viewer say what this is" are real bars, and no test will ever settle them. They
+are allowed — but a check that asks a human to decide carries three things, or
+it is not a check:
+
+| | |
+| --- | --- |
+| **Evidence** | What to open. Named explicitly, and never assumed to be the app — a phase may not put its work on screen at all |
+| **Procedure** | What to do with it. How many, chosen how |
+| **Pass condition** | What a yes looks like, in a sentence someone could disagree with |
+
+The verdict is then recorded in the row with who made it and when, the way any
+other check records its result.
+
+A judgement check that states only the bar is the same defect as a gate that
+lives only in prose. It reads as rigour, it cannot be executed, and it gets
+ticked on whatever the reader happened to have in front of them.
+
+*Source:* owner directive, 2026-08-17 — registered in
+[mission.md](mission.md#owner-decisions). Prompted by C16 in the Phase 1 spec,
+which asserted that the satire must land and named nothing to read it in. Phase
+1 renders one ailment of eight, so the only artifact a reader would naturally
+reach for showed almost none of the material being judged. Phase 0's C7 has the
+same shape and escaped notice because there the application *was* the evidence;
+it stands as written, since rewriting a closed phase's audit trail would cost
+more than it teaches.
+
 ## Requirement provenance
 
 No requirement enters this project without a written source. This section exists

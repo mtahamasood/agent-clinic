@@ -88,7 +88,7 @@ Inherited by every phase from
 | C13 | Times are relative | Every seeded appointment sits at a sensible offset from the run date, on a whole clinic hour, with at least one `COMPLETED` in the past and at least one `SCHEDULED` today (D7) |
 | C14 | Referentially whole | Every diagnosis names a real agent and a real ailment; every appointment a real agent and a real therapy; every ailment is treated by at least one therapy |
 | C15 | Written, not generated | No `test1`, no `Agent 3`, no lorem. Every ailment description is deadpan clinical prose and every agent has a personality you could describe from their intake notes |
-| C16 | The satire lands | Someone reading a single ailment description gets the joke and the product at the same time. A judgement, not a measurement — recorded with who made it and when, as C7 was in Phase 0 |
+| C16 | The satire lands | **Evidence:** the ailment descriptions in `prisma/seed-data.ts`, read in the file or through a rendering of it. Phase 1 puts none of this on screen, so the app is *not* the evidence and cannot be. **Procedure:** read three descriptions cold, at least one of them not among the four named in [mission.md](../mission.md#the-domain-in-one-paragraph). **Passes when** each one, read alone, carries the joke and the product together, in deadpan register, without costing clarity. A judgement, not a measurement — recorded with who made it and when |
 
 ### Queries and the page
 
@@ -199,9 +199,13 @@ than a tick:
 
 Two checks remain open, both by design:
 
-- **C16 — the satire lands.** A judgement, not a measurement. Like C7 in Phase
-  0, it needs the owner's verdict on the seeded copy, recorded with a name and a
-  date.
+- **C16 — the satire lands.** A judgement, not a measurement; it needs the
+  owner's verdict, recorded with a name and a date. The row was rewritten during
+  this walk: it originally stated the bar and named no evidence, so a reader
+  would have reached for the app — which shows one ailment of eight — and either
+  ticked it on almost nothing or skipped it as unfalsifiable. That is the C10
+  failure from Phase 0 in a subtler form, and the general fix is in
+  [tech-stack.md](../tech-stack.md#judgement-checks).
 - **B7 — green CI.** Requires the branch to be pushed. B1–B6 all pass locally.
 
 The phase is otherwise complete. No condition in section E holds.
