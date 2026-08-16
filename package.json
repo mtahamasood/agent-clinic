@@ -15,7 +15,10 @@
     "seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
@@ -43,6 +46,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
+    "prettier": "^3.9.6",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
     "typescript": "^5",

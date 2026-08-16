@@ -1,0 +1,52 @@
+name: CI
+
+# Every quality gate in specs/tech-stack.md, run on a machine that starts
+# empty. The clean-clone claim in the phase spec cannot be verified on the
+# machine that wrote the code — this is the only place it gets tested.
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    env:
+      # The self-hosted target: a libSQL file on disk. The Vercel target differs
+      # only in this value — see specs/tech-stack.md, "Parity rules".
+      DATABASE_URL: file:./clinic.db
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      # Runs `prisma generate` via postinstall.
+      - run: npm ci
+
+      - name: Provision the database
+        run: |
+          npm run migrate
+          npm run seed
+
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # Builds and starts the app itself, per playwright.config.ts (D3).
+      - run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

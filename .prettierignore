@@ -1,0 +1,13 @@
+# Generated, not authored
+.next/
+src/generated/
+prisma/migrations/
+package-lock.json
+playwright-report/
+test-results/
+
+# Markdown is hand-wrapped at 80 columns throughout this repo. Prettier pads
+# table cells to the width of the longest row, producing 200-character lines,
+# and rewrites *emphasis* to _emphasis_. The specs are the teaching material
+# here, so their diffs stay readable and Prettier stays on the code.
+**/*.md
