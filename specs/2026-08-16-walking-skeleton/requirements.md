@@ -22,7 +22,7 @@ deferred to Phase 1, it is.
 | Layout | Root layout composes `ClinicHeader`, a `<main>` landmark holding the container width, and a link-free `ClinicFooter` (D8) |
 | Page | `/` names the clinic, carries a one-line tagline, and renders one row read from the database |
 | Unit tests | Vitest installed, one passing test |
-| E2E tests | Playwright installed, one passing spec against a **production build** |
+| E2E tests | Playwright against a **production build**: the seeded page, the C8 landmarks, and the C10 contrast measurement (D9) |
 | Quality | ESLint + Prettier configured and clean |
 | CI | GitHub Actions running every quality gate on push |
 | Docs | `README.md` documents run / build / test / seed for both deploy targets |
@@ -45,8 +45,8 @@ Not deferred forever — deferred to a named phase, so nobody has to re-argue it
 ## Decisions
 
 Four questions were open before this spec was written; a fifth was added when the
-home page came into scope, and D6–D8 were recorded during implementation. All
-eight are now closed.
+home page came into scope, and D6–D9 were recorded during implementation. All
+nine are now closed.
 
 ### D1 — The throwaway model is genuinely throwaway
 
@@ -215,6 +215,40 @@ bought with per-route width freedom.
 [tech-stack.md](../tech-stack.md) already designates for shared UI, and both are
 named in clinic vocabulary per the same document. No row in the "Locked in" table
 changes and the constitution needs no edit.
+
+### D9 — Contrast is measured in the Playwright pass, with no new dependency
+
+Check C10 is enforced by `tests/contrast.spec.ts`, which walks every text-bearing
+element on `/`, composites foreground and background to sRGB, and asserts the
+WCAG AA ratio — 4.5:1, or 3:1 for large text.
+
+*Rationale:* [tech-stack.md](../tech-stack.md) says contrast is *"[c]hecked in
+the Playwright pass, not by vibes"*. Until now nothing enforced it, so C10 was a
+promise rather than a gate — the same shape of hole that D4 exists to close.
+The margin turned out to be thin enough to be worth guarding: `muted-foreground`
+on `background` measures **4.74:1** against a 4.5 requirement. A darkening of
+that token by a few percent would breach AA, and nothing would have said so.
+
+*Rejected:* `@axe-core/playwright`. It is the industry-standard sweep and catches
+far more than contrast, but C10 asks about contrast specifically, and the
+relative-luminance formula is about fifteen lines. A broad a11y audit is worth
+having — it is simply a different, larger decision than closing C10, and it
+should arrive with its own spec rather than smuggled in as a fix.
+
+*Implementation notes*, both of which cost a wrong result before they were found:
+
+- Colours are resolved by painting to a canvas, not by parsing the computed
+  value. Chromium reports these theme tokens as `lab(...)`, which a hand-written
+  `rgb()` parser silently misreads.
+- Alpha is composited before measuring. The first version discarded it, and so
+  scored `text-foreground/25` — a 1.78:1 failure — as solid black at 21:1. The
+  test was verified by degrading the footer until it failed, then restoring it.
+
+*Scope note:* no new dependency, so no row in the "Locked in" table changes and
+the constitution needs no edit. Dark theme is out of scope: the shadcn preset
+ships a `.dark` class that Phase 0 never applies, and measuring a state the app
+cannot enter would test the preset rather than this product. It becomes real
+work when a theme toggle lands.
 
 ## Constraints inherited
 

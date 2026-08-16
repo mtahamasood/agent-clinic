@@ -28,6 +28,17 @@ built in.
 A8 is not ceremony. A booth demo on bad wifi is a stated audience in
 [mission.md](../mission.md#target-audience).
 
+Reproduce A8 without touching your wifi, on Linux, by building in a network
+namespace that has nothing but loopback:
+
+```sh
+unshare -rn bash -c 'ip link set lo up; rm -rf .next; npm run build && npm start'
+```
+
+Confirm the namespace is genuinely offline first — `curl https://registry.npmjs.org`
+inside it must fail — or the check passes for the wrong reason. `rm -rf .next`
+matters: a warm build directory can hide a fetch that only a cold build makes.
+
 ---
 
 ## B. Quality gates
@@ -41,7 +52,7 @@ Inherited by every phase from
 | B2 | ESLint | Clean |
 | B3 | `prettier --check .` | Clean |
 | B4 | Vitest | The one unit test passes |
-| B5 | Playwright | The one spec passes **against the production build** (D3), asserting the clinic name, the seeded notice, and the three C8 landmarks |
+| B5 | Playwright | The suite passes **against the production build** (D3): the clinic name and the seeded notice, the three C8 landmarks, and the C10 contrast measurement |
 | B6 | CI | A green run on this branch, executing B1–B5 (D4) |
 
 B6 subsumes B1–B5, but they are run locally first. CI is the gate, not the
@@ -62,7 +73,7 @@ discovery mechanism.
 | C7 | The product is identifiable | Someone seeing `/` for the first time, with no context, can say what AgentClinic is (D5) |
 | C8 | Document structure | Exactly one `<h1>`; `banner`, `main`, and `contentinfo` landmarks all present, and all three supplied by the root layout rather than by the page (D8); `<html lang>` set |
 | C9 | No dead links | Nothing on the page navigates to a route that does not exist yet (D5). Header and footer are both link-free by construction (D8) |
-| C10 | Contrast | Every text colour used meets WCAG AA against its background |
+| C10 | Contrast | Every text colour used meets WCAG AA against its background. Measured in `tests/contrast.spec.ts`, not eyeballed (D9). Light theme only — the preset's `.dark` class is never applied in Phase 0 |
 
 ---
 
