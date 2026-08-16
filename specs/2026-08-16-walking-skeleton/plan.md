@@ -101,7 +101,7 @@ screen still comes from the database.
 
 7.1 Configure ESLint and Prettier; resolve every existing violation.
 7.2 Add an npm script chaining the gates for local use.
-7.3 Add `.github/workflows/ci.yml` running `tsc --noEmit`, ESLint, Prettier
+7.3 Add `.github/workflows/ci.yml` running `npm run typecheck`, ESLint, Prettier
     `--check`, Vitest, and Playwright on push (D4). CI provisions its own
     database file — migrate, then seed, before the E2E step.
 

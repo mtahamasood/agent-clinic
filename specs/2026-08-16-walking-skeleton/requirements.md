@@ -129,6 +129,31 @@ wrote it.
 The test: if a change to `/` in this phase cannot be justified by *"someone must
 be able to tell what this product is"*, it belongs to Phase 7 or Phase 8.
 
+### D6 — Fonts ship through npm, not from Google
+
+`next/font/google` is replaced by the `geist` npm package.
+
+*Rationale:* the generated layout fetched Geist from Google Fonts at build time.
+A cold build with the network blocked fails outright — verified, not assumed:
+
+```
+Error: next/font: Failed to fetch Geist Mono from Google Fonts.
+```
+
+[tech-stack.md](../tech-stack.md#deployment) states that once `npm install` has
+run, the app needs no network at all, and check A8 in
+[validation.md](validation.md) tests precisely that. The `geist` package ships
+the font files through the registry, so install remains the only step that
+touches the network.
+
+*Rejected:* `next/font/local` with committed `.woff2` files — same outcome, but
+puts binaries in a teaching repo. And the plain system font stack — free, but
+discards the shadcn preset's typography for nothing in return.
+
+*Scope note:* this adds one dependency that [tech-stack.md](../tech-stack.md)
+does not name. It is a font asset rather than a stack choice, so no row in the
+"Locked in" table changes and that document needs no edit.
+
 ## Constraints inherited
 
 From [tech-stack.md](../tech-stack.md), restated because Phase 0 is where they

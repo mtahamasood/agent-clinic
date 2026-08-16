@@ -37,7 +37,7 @@ Inherited by every phase from
 
 | # | Check | Passes when |
 | --- | --- | --- |
-| B1 | `tsc --noEmit` | Clean. No `any` outside a commented escape hatch |
+| B1 | `npm run typecheck` | Clean. No `any` outside a commented escape hatch. The script runs `next typegen` first — bare `tsc --noEmit` fails on a cold checkout, because Next generates `LayoutProps`/`PageProps` into `.next/types`, which `tsconfig.json` includes but no build has yet produced |
 | B2 | ESLint | Clean |
 | B3 | `prettier --check .` | Clean |
 | B4 | Vitest | The one unit test passes |
