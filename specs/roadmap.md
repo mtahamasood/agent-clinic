@@ -12,6 +12,9 @@ Phase 0, each one ends with something you can click in a browser.
   [tech-stack.md](tech-stack.md#quality-gates).
 - **Anything ambiguous gets a feature spec** in `specs/` before code is written.
 - **Scope creep goes to the backlog**, not into the current phase.
+- **No requirement without provenance.** Every normative statement names its
+  source — stakeholder brief, constitution clause, or dated owner decision. See
+  [tech-stack.md](tech-stack.md#requirement-provenance).
 
 ---
 

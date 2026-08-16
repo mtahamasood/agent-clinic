@@ -65,6 +65,9 @@ front-loads a schema decision the roadmap deliberately defers to Phase 1, under
 the worst possible conditions — while the toolchain is still unproven. A model
 we have already agreed to delete cannot accidentally become load-bearing.
 
+*Source:* [roadmap.md](../roadmap.md#phase-0--walking-skeleton) — "a single
+throwaway model".
+
 ### D2 — Tailwind plus one shadcn primitive
 
 `shadcn init` runs in this phase and exactly one component (`Card`) is pulled in
@@ -75,6 +78,10 @@ the `cn` utility. Discovering a problem there inside Phase 2, next to real roste
 UI, means debugging two things at once. Here it is the only thing that can break.
 
 *Constraint:* one component. A second is scope creep and goes to Phase 2.
+
+*Source:* [roadmap.md](../roadmap.md#phase-0--walking-skeleton) — "Tailwind +
+shadcn/ui initialised" — and the Locked in table in
+[tech-stack.md](../tech-stack.md#locked-in).
 
 ### D3 — Playwright targets the production build
 
@@ -92,6 +99,10 @@ hard one unproven until the phase that can least afford a surprise.
 *Cost accepted:* the E2E suite is slower from day one, because every run pays for
 a build.
 
+*Source:* [tech-stack.md](../tech-stack.md#quality-gates) — "The **production
+build** (`next build` + `next start`) runs locally" — and the Phase 0 exit
+criterion in [roadmap.md](../roadmap.md#phase-0--walking-skeleton).
+
 ### D4 — CI lands now
 
 A GitHub Actions workflow runs `tsc --noEmit`, ESLint, Prettier, Vitest, and
@@ -107,6 +118,9 @@ run is visible to the course-student audience in
 [mission.md](../mission.md#target-audience). The gate that cannot be reproduced
 locally is the clean-clone one — a CI runner starts from an empty machine every
 time, which is exactly what section A of [validation.md](validation.md) asks for.
+
+*Source:* [tech-stack.md](../tech-stack.md#locked-in) — lint and format
+"run in CI" — and its quality gates section.
 
 ### D5 — The home page is minimal, not a landing page
 
@@ -130,6 +144,10 @@ wrote it.
 
 The test: if a change to `/` in this phase cannot be justified by *"someone must
 be able to tell what this product is"*, it belongs to Phase 7 or Phase 8.
+
+*Source:* [roadmap.md](../roadmap.md#phase-0--walking-skeleton) — "One page
+that reads one row from the database" — and the one-liner in
+[mission.md](../mission.md#the-one-liner).
 
 ### D6 — Fonts ship through npm, not from Google
 
@@ -156,6 +174,10 @@ discards the shadcn preset's typography for nothing in return.
 does not name. It is a font asset rather than a stack choice, so no row in the
 "Locked in" table changes and that document needs no edit.
 
+*Source:* [tech-stack.md](../tech-stack.md#deployment) parity rule — "the app
+needs no network at all" after install — enforced as check A8 in
+[validation.md](validation.md).
+
 ### D7 — `shadcn` stays in `dependencies`, not `devDependencies`
 
 It looks misplaced, because `shadcn` is best known as a CLI. It is not only that
@@ -173,6 +195,9 @@ no asterisks. *"If a demo needs a caveat spoken aloud, that is a bug"*
 *Cost accepted:* a less precise `package.json` and a slightly larger production
 `node_modules`. Recorded here so nobody tidies it later and breaks the
 `--omit=dev` path.
+
+*Source:* [tech-stack.md](../tech-stack.md#deployment) — the self-hosted path
+is `npm install && npm run build && npm start` with no asterisks.
 
 ### D8 — The root layout composes header, `<main>`, and footer
 
@@ -216,6 +241,10 @@ bought with per-route width freedom.
 named in clinic vocabulary per the same document. No row in the "Locked in" table
 changes and the constitution needs no edit.
 
+*Source:* owner request, 2026-08-16 — compose the root layout from
+header/main/footer subcomponents — plus 5.1 in [plan.md](plan.md), which had
+already placed the `<main>` landmark and container width in the root layout.
+
 ### D9 — Contrast is measured in the Playwright pass, with no new dependency
 
 Check C10 is enforced by `tests/contrast.spec.ts`, which walks every text-bearing
@@ -249,6 +278,14 @@ the constitution needs no edit. Dark theme is out of scope: the shadcn preset
 ships a `.dark` class that Phase 0 never applies, and measuring a state the app
 cannot enter would test the preset rather than this product. It becomes real
 work when a theme toggle lands.
+
+*Source:* [tech-stack.md](../tech-stack.md#conventions) Accessibility
+convention — "WCAG AA contrast. Checked in the Playwright pass, not by vibes."
+That clause is itself unattributed to any stakeholder; whether it stands is a
+pending owner decision recorded in
+[mission.md](../mission.md#owner-decisions), and this record deliberately does
+not settle it. D9 closes the gap between what the constitution claimed and
+what the tests measured — it does not adjudicate the claim.
 
 ## Constraints inherited
 

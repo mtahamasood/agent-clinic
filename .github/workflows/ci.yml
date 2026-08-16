@@ -36,6 +36,10 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
+      # Every decision record must name its source — see specs/tech-stack.md,
+      # "Requirement provenance". Runs inside `verify` so branch protection
+      # makes it binding: an unattributed requirement cannot reach main.
+      - run: npm run check:provenance
       - run: npm test
 
       - name: Install Playwright browser
