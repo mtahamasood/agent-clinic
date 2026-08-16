@@ -111,3 +111,13 @@ unrelated reasons and happen to suit it:
 
 The useful consequence is that both rules now carry a second, independent reason
 to exist, so relaxing either costs more than its original rationale suggests.
+
+## Owner decisions
+
+The dated register that [tech-stack.md](tech-stack.md#requirement-provenance)
+requires for requirements that trace to the owner rather than the brief. The
+target audience above predates this register and stands as its precedent.
+
+| Date | Decision |
+| --- | --- |
+| 2026-08-16 | The requirement-provenance rule itself: no requirement enters this project without a written source. Prompted by the discovery that the accessibility requirement (WCAG AA contrast and its siblings) traces to no stakeholder and no mission statement. The fate of that requirement is a pending owner decision and is deliberately **not** settled by this entry. |

@@ -106,6 +106,52 @@ Every phase in [roadmap.md](roadmap.md) is done only when all of these pass:
 - The **production build** (`next build` + `next start`) runs locally against a
   local libSQL file — not just `next dev`.
 
+## Requirement provenance
+
+No requirement enters this project without a written source. This section exists
+because one did: the accessibility convention above and the Phase 8
+accessibility pass both assert WCAG AA contrast, yet no stakeholder in
+`README.md` asked for accessibility and `mission.md` never mentions it. The
+requirement produced real work — a validation check and a test — before anyone
+could say who wanted it. What becomes of that requirement is a separate owner
+decision; this section makes sure the pattern cannot repeat.
+
+**The rule.** Every normative statement — anything asserting the product or the
+process *must* be some way — carries exactly one of three sources:
+
+| Source | Meaning | Recorded where |
+| --- | --- | --- |
+| **Stakeholder** | Traces to the brief | `README.md` input, mapped in mission.md's traceability section |
+| **Constitution** | Derived from an existing clause | The citation sits next to the requirement (file + section) |
+| **Owner** | The project owner decided it, dated | mission.md's traceability section, as the target audience already is |
+
+"It seemed like good practice" is not a source. Engineering defaults are
+proposals, not requirements: an agent or contributor who believes the project
+needs something nobody asked for brings it to the owner as a question, and it
+enters — if it enters — as a dated Owner entry. Until then it binds nobody.
+
+The Owner row exists because some requirements legitimately come from nobody in
+the brief — the target audience in mission.md is one. The discipline is not "no
+new requirements"; it is "no anonymous ones."
+
+**Enforcement**, because a rule that lives only in prose is not a gate:
+
+- Decision records in feature specs (`### D1`, `### D2`, …) must carry a
+  `*Source:*` line. `npm run check:provenance` fails without one, CI runs it
+  inside the required `verify` check, and branch protection makes `verify`
+  binding — so an unattributed decision record cannot reach `main`.
+- `.github/pull_request_template.md` asks where every new requirement came
+  from. Prose the linter cannot parse gets caught by the author having to
+  answer that question in writing.
+- `CLAUDE.md` instructs coding agents to stop and ask rather than write an
+  unsourced requirement into `specs/`. An agent that wants a new quality bar
+  proposes it; it does not install it.
+- A requirement discovered without a source is a spec bug. The fix is to
+  attribute it or delete it — never to keep it silently.
+
+*Source:* owner directive, 2026-08-16, prompted by the unattributed
+accessibility requirement above.
+
 ## Branch protection
 
 The gates above are enforced on `main` by GitHub, not by anything in this
