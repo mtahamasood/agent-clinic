@@ -1,0 +1,24 @@
+// AgentClinic — Prisma schema.
+//
+// Phase 0 (walking skeleton) holds exactly one model, and it is deliberately
+// disposable. See specs/2026-08-16-walking-skeleton/requirements.md, decision D1.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// A single notice pinned to the clinic's waiting-room board.
+///
+/// Throwaway by design: this model exists to prove the path from schema to
+/// migration to seed to rendered page, and nothing else. Phase 1 deletes it and
+/// introduces the four real nouns — Agent, Ailment, Therapy, Appointment.
+model ClinicNotice {
+  id        String   @id @default(cuid())
+  message   String
+  createdAt DateTime @default(now())
+}

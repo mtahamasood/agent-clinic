@@ -21,13 +21,17 @@ Prove the whole path once, on trivial content, so no later phase has to argue
 about setup.
 
 - Next.js + TypeScript (strict) + Tailwind + shadcn/ui initialised.
-- Prisma wired to SQLite with a single throwaway model.
+- Prisma wired to libSQL with a single throwaway model, pointed at a local file
+  via `DATABASE_URL`.
 - One page that reads one row from the database and renders it.
 - Vitest and Playwright installed, one passing test each.
-- ESLint + Prettier configured; `README.md` documents run/test/seed commands.
+- ESLint + Prettier configured; `README.md` documents run/build/test/seed
+  commands for **both** deploy targets.
 
 **Exit:** clean clone → `npm install` → `npm run dev` shows database-backed
-content; `npm test` and the Playwright run both pass.
+content; `npm run build && npm start` serves the same page offline; `npm test`
+and the Playwright run both pass. Proving the local production path here is what
+stops Phase 8 from discovering it doesn't work.
 
 ---
 
@@ -102,7 +106,9 @@ spec before implementation.
 - Confirmation page, and the appointment appears on the agent's case file.
 
 **Exit:** Playwright books an appointment end to end and finds it on the case
-file; conflicting and past-dated bookings are refused with clear messages.
+file; conflicting and past-dated bookings are refused with clear messages. The
+same flow is verified against a **production build running locally**, since this
+is the first phase that writes to the database.
 
 ---
 
@@ -126,9 +132,13 @@ clicking through.
   it earns its place.
 - Accessibility pass: keyboard paths, focus order, AA contrast.
 - Metadata, favicon, social preview.
-- Deploy to Vercel.
+- Deploy **both** ways: self-hosted (`next build` + `next start`) against a local
+  libSQL file, and Vercel against a hosted Turso database.
+- `README.md` carries verified step-by-step instructions for each path.
 
-**Exit:** a live URL that looks deliberate on desktop and mobile.
+**Exit:** a live URL that looks deliberate on desktop and mobile, **and** a
+self-hosted run of the same commit — booking included — that works with no
+network beyond localhost.
 
 ---
 
@@ -141,4 +151,4 @@ Parked, not promised. Each needs its own spec if it is ever pulled in:
 - Search across agents, ailments, and therapies
 - Therapy outcome notes and follow-up scheduling
 - Auth and per-agent private case files
-- Postgres migration
+- Postgres migration, if write concurrency ever outgrows libSQL
