@@ -96,7 +96,7 @@ Inherited by every phase from
 | --- | --- | --- |
 | C17 | Every noun answers | One module per noun in `src/server/`, each returning typed results with the relations its named phase needs (D9) |
 | C18 | Types are inferred | Query return types come from Prisma. A field renamed in the schema breaks `npm run typecheck`, not just a test |
-| C19 | `/` is database-backed | Editing the seeded ailment's summary and re-seeding changes what `/` renders (D1) |
+| C19 | `/` is database-backed | Editing the seeded ailment's summary changes what `/` renders under `next dev`, and under `next start` after a rebuild. The page is prerendered at build time, which is correct for this phase and ends at Phase 6 (D1, D12) |
 | C20 | Empty state | With the ailments table emptied, `/` renders an in-voice message and does not crash; the name and tagline still show |
 | C21 | Document structure holds | Exactly one `<h1>`; `banner`, `main`, and `contentinfo` still supplied by the root layout, not the page |
 | C22 | Still a Server Component | No `"use client"` anywhere in the repo |
@@ -159,5 +159,49 @@ the failure mode Phase 0 existed to prevent, and this phase inherits the habit.
 
 ## Result
 
-*Pending. Nothing has been implemented yet — this spec was written before any
-code, per [roadmap.md](../roadmap.md#how-a-phase-works).*
+**Walked 2026-08-17 on Linux 6.18 (WSL2), Node v22.23.2.** Everything holds
+except two checks that are not the implementer's to sign off, both named below.
+
+Section A ran in a fresh clone of this branch at
+`/tmp/.../scratchpad/clone`, in order:
+
+- **A2** `npm install` — clean, no prompt, no manual step.
+- **A10** `npm test` before anything else — 39 tests pass on a bare clone, and
+  no `clinic.db` exists afterwards. D11 holds: the suite provisions and discards
+  `clinic.test.db` and leaves the developer's database alone.
+- **A4, A5** migrate and seed — 8 patients, 8 ailments, 6 therapies, 3
+  appointments on today's calendar.
+- **C11** seeded three times; every table identical each run — 8 agents, 8
+  ailments, 27 symptoms, 6 therapies, 18 diagnoses, 9 appointments, 13
+  therapy↔ailment links.
+- **A6, A7** dev and the production build both serve the clinic name, the
+  tagline, and Chronic Context Loss from the database.
+- **A8** cold offline build in a `unshare -rn` namespace, with the absence of a
+  route out confirmed first (`curl https://registry.npmjs.org` failed inside
+  it). `rm -rf .next` beforehand. Build succeeded.
+- **A9** a Phase 0 database — built from `main`, migrated, and carrying a
+  `ClinicNotice` row — accepted the new migration with no reset. Tables
+  afterwards: the six models, the implicit join, and `_prisma_migrations`. The
+  seed then populated it. D10 holds.
+
+Sections B, C, and D pass as written. Two findings from the walk are worth more
+than a tick:
+
+- **C19 was imprecise and is now corrected.** `/` is prerendered at build time,
+  so a database edit shows up immediately under `next dev` and only after a
+  rebuild under `next start`. Verified both ways rather than reasoned about.
+  Correct for this phase, and fatal for Phases 6 and 7 — recorded as D12 in
+  [requirements.md](requirements.md) so the phase it breaks reads it first.
+- **A test caught a false rationale in this spec.** D5 claimed alphabetical
+  order gets severity wrong; `MILD`, `MODERATE`, `SEVERE` sort correctly by
+  accident. The correction is in D5, and the ordering module stayed on an honest
+  reason.
+
+Two checks remain open, both by design:
+
+- **C16 — the satire lands.** A judgement, not a measurement. Like C7 in Phase
+  0, it needs the owner's verdict on the seeded copy, recorded with a name and a
+  date.
+- **B7 — green CI.** Requires the branch to be pushed. B1–B6 all pass locally.
+
+The phase is otherwise complete. No condition in section E holds.

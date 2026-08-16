@@ -410,6 +410,42 @@ seeded queries" — with the no-hidden-setup habit inherited from Phase 0's
 [plan.md](../2026-08-16-walking-skeleton/plan.md) 6.1 and the clean-clone run in
 its [validation.md](../2026-08-16-walking-skeleton/validation.md), section A.
 
+### D12 — `/` stays statically prerendered, and Phase 6 is told why that ends
+
+`next build` prerenders `/` at build time, so the production server hands out a
+page whose ailment was read during the build. Phase 1 leaves it that way and
+changes no rendering strategy.
+
+*Verified, not inferred.* With the production build already made, the seeded
+summary was edited in the database and both servers were asked for the page:
+`next dev` returned the new text immediately; `next start` returned the text
+from build time.
+
+*Rationale for leaving it:* nothing in this phase writes at runtime. Ailments
+change when someone edits the seed and redeploys, which is exactly the lifecycle
+static prerendering assumes, and it is the faster and cheaper answer for a booth
+demo. Forcing dynamic rendering now would be an engineering default with no
+source behind it — the thing this project's provenance rule exists to stop.
+
+*Where it stops being correct, which is the point of writing it down:*
+
+- **Phase 6** writes an `Appointment` and then shows it on the agent's case
+  file. A prerendered case file will not contain it. The booking flow's spec has
+  to choose a strategy — dynamic rendering, or revalidating the affected paths —
+  and its exit criterion is already written to catch this, since it verifies the
+  flow "against a production build running locally".
+- **Phase 7**'s dashboard answers "what's happening today?". Prerendered, it
+  answers "what was happening on the day this was built" — and D7's relative
+  seeding makes that failure look plausible rather than obviously broken, which
+  is worse.
+
+Neither is Phase 1's to fix. Both are now a paragraph in the spec their phase
+will read rather than a surprise at the end of an implementation.
+
+*Source:* [roadmap.md](../roadmap.md#phase-6--booking) — the booked appointment
+must appear on the case file, verified against a production build — and
+[roadmap.md](../roadmap.md#phase-7--clinic-dashboard), "today's appointments".
+
 ## Constraints inherited
 
 From [tech-stack.md](../tech-stack.md), still binding and now with more surface
