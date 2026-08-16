@@ -41,7 +41,7 @@ Inherited by every phase from
 | B2 | ESLint | Clean |
 | B3 | `prettier --check .` | Clean |
 | B4 | Vitest | The one unit test passes |
-| B5 | Playwright | The one spec passes **against the production build** (D3), asserting both the clinic name and the seeded notice |
+| B5 | Playwright | The one spec passes **against the production build** (D3), asserting the clinic name, the seeded notice, and the three C8 landmarks |
 | B6 | CI | A green run on this branch, executing B1–B5 (D4) |
 
 B6 subsumes B1–B5, but they are run locally first. CI is the gate, not the
@@ -60,8 +60,8 @@ discovery mechanism.
 | C5 | Seed is idempotent | Running `npm run seed` twice leaves one notice, not two |
 | C6 | Empty state | With the notice deleted, `/` renders an in-voice message and does not crash — the clinic name and tagline still show |
 | C7 | The product is identifiable | Someone seeing `/` for the first time, with no context, can say what AgentClinic is (D5) |
-| C8 | Document structure | Exactly one `<h1>`; a `<main>` landmark present; `<html lang>` set |
-| C9 | No dead links | Nothing on the page navigates to a route that does not exist yet (D5) |
+| C8 | Document structure | Exactly one `<h1>`; `banner`, `main`, and `contentinfo` landmarks all present, and all three supplied by the root layout rather than by the page (D8); `<html lang>` set |
+| C9 | No dead links | Nothing on the page navigates to a route that does not exist yet (D5). Header and footer are both link-free by construction (D8) |
 | C10 | Contrast | Every text colour used meets WCAG AA against its background |
 
 ---

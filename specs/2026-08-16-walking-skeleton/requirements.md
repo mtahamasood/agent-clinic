@@ -19,6 +19,7 @@ deferred to Phase 1, it is.
 | Styling | Tailwind CSS, configured and used |
 | Components | shadcn/ui initialised; exactly one primitive (`Card`) pulled in |
 | Database | Prisma + libSQL driver adapter, one throwaway model, local file via `DATABASE_URL` |
+| Layout | Root layout composes `ClinicHeader`, a `<main>` landmark holding the container width, and a link-free `ClinicFooter` (D8) |
 | Page | `/` names the clinic, carries a one-line tagline, and renders one row read from the database |
 | Unit tests | Vitest installed, one passing test |
 | E2E tests | Playwright installed, one passing spec against a **production build** |
@@ -44,7 +45,8 @@ Not deferred forever — deferred to a named phase, so nobody has to re-argue it
 ## Decisions
 
 Four questions were open before this spec was written; a fifth was added when the
-home page came into scope. All five are now closed.
+home page came into scope, and D6–D8 were recorded during implementation. All
+eight are now closed.
 
 ### D1 — The throwaway model is genuinely throwaway
 
@@ -171,6 +173,48 @@ no asterisks. *"If a demo needs a caveat spoken aloud, that is a bug"*
 *Cost accepted:* a less precise `package.json` and a slightly larger production
 `node_modules`. Recorded here so nobody tidies it later and breaks the
 `--omit=dev` path.
+
+### D8 — The root layout composes header, `<main>`, and footer
+
+The root layout is three parts: a `ClinicHeader` component, a `<main>` landmark
+carrying the page container width, and a `ClinicFooter` component. Pages supply
+content and nothing else.
+
+*Rationale:* three separate pressures, one change.
+
+- The header grows a nav in Phase 2. Extracting it now means that change touches
+  one small file instead of the root layout.
+- `<main>` and the container width belong to the layout, which is what 5.1 in
+  [plan.md](plan.md) asked for — the first implementation put both in `page.tsx`
+  instead. Hoisting them means check C8 in [validation.md](validation.md) cannot
+  regress one route at a time as Phase 2 onwards adds pages.
+- The body already carried `flex min-h-full flex-col`, and `<main>` already
+  carried `flex-1` — sticky-footer scaffolding with no footer to pin. The
+  footer completes a structure that was half-built.
+
+*Rejected:* a `ClinicMain` component alongside the other two. Symmetric to read,
+but it would wrap `children` in a `<main>` and do nothing else — indirection with
+no behaviour behind it. The element stays inline in the layout.
+
+*Rejected:* links in the footer. A footer is where navigation collects, and every
+route beyond `/` is Phase 2 or later. This is the same reasoning D5 uses to keep
+the header bare, and check C9 fails on a link to a route that does not exist.
+The footer is text only until there is somewhere to point it.
+
+*Boundary.* The footer is one line in clinic voice. It is not a site map, not
+credits, not metadata. This is a structural change plus a single sentence — it is
+**not** the Phase 8 design pass, and it does not license one. If the footer grows
+links it is Phase 2 at the earliest; if it grows a treatment it is Phase 8.
+
+*Cost accepted:* `max-w-2xl` now binds every route from one place. A later route
+wanting a wider canvas — the Phase 2 roster, the Phase 5 catalogue with filters —
+takes a nested layout rather than a per-page override. One landmark definition,
+bought with per-route width freedom.
+
+*Scope note:* both components live in `src/components/`, which
+[tech-stack.md](../tech-stack.md) already designates for shared UI, and both are
+named in clinic vocabulary per the same document. No row in the "Locked in" table
+changes and the constitution needs no edit.
 
 ## Constraints inherited
 
