@@ -70,7 +70,7 @@ discovery mechanism.
 | C4 | One model | `schema.prisma` contains `ClinicNotice` and no other model (D1) |
 | C5 | Seed is idempotent | Running `npm run seed` twice leaves one notice, not two |
 | C6 | Empty state | With the notice deleted, `/` renders an in-voice message and does not crash — the clinic name and tagline still show |
-| C7 | The product is identifiable | Someone seeing `/` for the first time, with no context, can say what AgentClinic is (D5) |
+| C7 | The product is identifiable | Someone seeing `/` for the first time, with no context, can say what AgentClinic is (D5). **Passed** — owner verdict, 2026-08-17, on visual inspection of the production build. The one check here that is a judgement rather than a measurement, so it is recorded with who made it and when |
 | C8 | Document structure | Exactly one `<h1>`; `banner`, `main`, and `contentinfo` landmarks all present, and all three supplied by the root layout rather than by the page (D8); `<html lang>` set |
 | C9 | No dead links | Nothing on the page navigates to a route that does not exist yet (D5). Header and footer are both link-free by construction (D8) |
 | C10 | Contrast | **Struck** by owner decision, 2026-08-17 (D10): the requirement traced to no stakeholder and no mission statement. `tests/contrast.spec.ts` was deleted with it. The row remains so C1–C9 keep their numbers |
@@ -119,3 +119,21 @@ holds.** (C10 is struck — D10.)
 Record the result of section A in the PR description — including the machine and
 Node version it was run on. A clean-clone claim with no evidence behind it is the
 exact failure mode this phase exists to prevent.
+
+## Result
+
+**Phase 0 is closed, 2026-08-17.** Every check above holds: A1–A8, B1–B6,
+C1–C9, D1–D5, and no condition in section E.
+
+The phase merged before this walk was complete, and the walk found two checks
+resting on nothing. Both are now settled rather than assumed:
+
+- **A8** (offline build) had never been run. Verified in a `unshare -rn` network
+  namespace with the absence of a route out confirmed first, on a cold build
+  directory — recipe in section A.
+- **C10** (contrast) had no mechanism at all, despite the constitution claiming
+  Playwright enforced it. Briefly closed with a measuring test, then struck
+  entirely once the underlying requirement was found to have no source (D10).
+
+C7 is the only check that cannot be automated, and carries the owner's verdict
+and date in its row above. Phase 1 may begin.
