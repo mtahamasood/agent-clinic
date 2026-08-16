@@ -154,6 +154,24 @@ discards the shadcn preset's typography for nothing in return.
 does not name. It is a font asset rather than a stack choice, so no row in the
 "Locked in" table changes and that document needs no edit.
 
+### D7 — `shadcn` stays in `dependencies`, not `devDependencies`
+
+It looks misplaced, because `shadcn` is best known as a CLI. It is not only that
+here: `src/app/globals.css` does `@import "shadcn/tailwind.css"`, making the
+package a real input to the build.
+
+*Rationale:* moving it to `devDependencies` means any production-mode install —
+`npm ci --omit=dev`, or `npm install` with `NODE_ENV=production` — produces a
+build that fails on a missing CSS import. Nothing in
+[tech-stack.md](../tech-stack.md#deployment) forbids that install mode, and the
+self-hosted path is meant to be `npm install && npm run build && npm start` with
+no asterisks. *"If a demo needs a caveat spoken aloud, that is a bug"*
+([mission.md](../mission.md#target-audience)).
+
+*Cost accepted:* a less precise `package.json` and a slightly larger production
+`node_modules`. Recorded here so nobody tidies it later and breaks the
+`--omit=dev` path.
+
 ## Constraints inherited
 
 From [tech-stack.md](../tech-stack.md), restated because Phase 0 is where they
