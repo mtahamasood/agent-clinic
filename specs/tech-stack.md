@@ -105,3 +105,30 @@ Every phase in [roadmap.md](roadmap.md) is done only when all of these pass:
 - The app builds and runs from a clean clone with documented commands.
 - The **production build** (`next build` + `next start`) runs locally against a
   local libSQL file — not just `next dev`.
+
+## Branch protection
+
+The gates above are enforced on `main` by GitHub, not by anything in this
+repository. It is written down here because the rule is otherwise invisible: the
+workflow that *defines* the gate is versioned in `.github/workflows/ci.yml`, but
+the rule that makes it *binding* lives in GitHub's settings and does not clone.
+
+| Rule | Setting |
+| --- | --- |
+| Required status check | `verify` — the CI workflow |
+| Branch up to date before merging | Required |
+| Enforced for administrators | Yes |
+| Force pushes | Blocked |
+| Branch deletion | Blocked |
+| Required reviews | None — single maintainer |
+
+The consequence: `main` is pull-request only, for everyone including the
+repository owner. Every change goes branch → PR → green `verify` → merge. A
+one-line typo fix costs a branch and a CI run, which is the price of the gate
+being real rather than advisory.
+
+A fork or a clone inherits none of this. Branch protection is a platform
+feature, not a Git one — Git itself has no concept of a protected branch, only
+server-side hooks and `receive.denyNonFastForwards` to build one from. Anyone
+running their own copy who wants the same discipline has to configure their
+host's equivalent themselves.
