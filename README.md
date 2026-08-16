@@ -9,9 +9,11 @@ This is a spec-driven codebase: every feature traces back to a document in
 [`specs/`](specs/). Start with [the mission](specs/mission.md), then
 [the stack](specs/tech-stack.md) and [the roadmap](specs/roadmap.md).
 
-> **Status:** Phase 0 — walking skeleton. The home page reads one notice from
-> the database. The four real nouns (agents, ailments, therapies, appointments)
-> arrive in Phase 1.
+> **Status:** Phase 1 — the four nouns. Agents, ailments, therapies, and
+> appointments exist in the schema and in the seed; `npm run seed` populates a
+> clinic with eight patients on the books. The pages that show them off start
+> arriving in Phase 2 — for now the home page reads a single ailment from the
+> database.
 
 ## Requirements
 
@@ -37,7 +39,7 @@ npm run dev         # http://localhost:3000
 | `npm start` | Serve the production build (run `build` first) |
 | `npm run migrate` | Apply migrations to `DATABASE_URL` |
 | `npm run seed` | Seed the database — safe to re-run |
-| `npm test` | Unit tests (Vitest) |
+| `npm test` | Unit tests (Vitest). Provisions and discards its own `clinic.test.db`, so it needs no setup and leaves your clinic alone |
 | `npm run test:e2e` | End-to-end tests (Playwright) — builds and starts the app itself |
 | `npm run check` | Typecheck, lint, format check, and unit tests |
 | `npm run typecheck` | `next typegen` then `tsc --noEmit` |
@@ -104,7 +106,8 @@ src/
   server/         data-access functions and Server Actions
 prisma/
   schema.prisma   the clinic's schema
-  seed.ts         demo data
+  seed-data.ts    the clinic itself — patients, ailments, therapies, calendar
+  seed.ts         the script that writes it
 specs/            the constitution, plus per-feature specs
 tests/            Playwright specs; unit tests sit next to their source
 ```

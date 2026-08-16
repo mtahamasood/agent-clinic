@@ -1,7 +1,12 @@
 // AgentClinic — Prisma schema.
 //
-// Phase 0 (walking skeleton) holds exactly one model, and it is deliberately
-// disposable. See specs/2026-08-16-walking-skeleton/requirements.md, decision D1.
+// The four nouns and nothing else: agent, ailment, therapy, appointment. If a
+// feature does not touch one of them it is out of scope until a spec says
+// otherwise (specs/mission.md). Two supporting models earn their place —
+// Diagnosis, because an agent's ailment carries a severity, and Symptom,
+// because this connector has no array type. Neither is a fifth noun.
+//
+// Phase 1: specs/2026-08-17-the-four-nouns/requirements.md.
 
 generator client {
   provider = "prisma-client"
@@ -12,13 +17,128 @@ datasource db {
   provider = "sqlite"
 }
 
-/// A single notice pinned to the clinic's waiting-room board.
+/// How much an ailment is costing an agent, at the time it was diagnosed.
 ///
-/// Throwaway by design: this model exists to prove the path from schema to
-/// migration to seed to rendered page, and nothing else. Phase 1 deletes it and
-/// introduces the four real nouns — Agent, Ailment, Therapy, Appointment.
-model ClinicNotice {
-  id        String   @id @default(cuid())
-  message   String
-  createdAt DateTime @default(now())
+/// Stored as TEXT — the connector has no enum type of its own — and enforced by
+/// the client. Clinical order is not a property of the spelling, so it lives in
+/// src/lib/severity.ts (D5).
+enum Severity {
+  MILD
+  MODERATE
+  SEVERE
+}
+
+/// Where an appointment stands.
+///
+/// Two values, deliberately. Cancellation and rescheduling sit in the roadmap
+/// backlog; when they arrive they bring a spec that settles how a freed slot
+/// interacts with the uniqueness constraints below (D5).
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+}
+
+/// A patient. Agents arrive at the clinic carrying one or more ailments, and
+/// leave with an appointment if we are doing our job.
+model Agent {
+  /// Hand-written and human-readable, because it is also the URL: /agents/atlas.
+  id          String   @id
+  name        String
+  /// The model family the agent belongs to. Always invented, never a real
+  /// vendor's — owner decision, 2026-08-17 (specs/mission.md).
+  modelFamily String
+  /// The clinic's own summary of what walked through the door.
+  intakeNotes String
+  admittedOn  DateTime
+  createdAt   DateTime @default(now())
+
+  diagnoses    Diagnosis[]
+  appointments Appointment[]
+}
+
+/// A condition the clinic recognises and treats. Described the way medical
+/// literature would describe it, if medical literature were about context
+/// windows and rate limits.
+model Ailment {
+  id          String @id
+  name        String @unique
+  /// One line, for a roster card or a cross-link.
+  summary     String
+  /// The clinical description. Deadpan; the clinic never winks.
+  description String
+
+  symptoms  Symptom[]
+  diagnoses Diagnosis[]
+  therapies Therapy[]
+}
+
+/// One presenting symptom of an ailment.
+///
+/// A value list rather than a noun: no page, no route, no life of its own, and
+/// deleted with the ailment it belongs to. It is a table because the connector
+/// does not support lists of primitive types — verified, not assumed (D4).
+model Symptom {
+  id        String  @id @default(cuid())
+  ailmentId String
+  ailment   Ailment @relation(fields: [ailmentId], references: [id], onDelete: Cascade)
+  text      String
+  /// Display order. Data rather than an accident of insertion.
+  position  Int
+
+  @@unique([ailmentId, position])
+  @@index([ailmentId])
+}
+
+/// Something the clinic can do about an ailment.
+model Therapy {
+  id              String @id
+  name            String @unique
+  summary         String
+  /// What the session actually involves.
+  description     String
+  durationMinutes Int
+
+  ailments     Ailment[]
+  appointments Appointment[]
+}
+
+/// An agent presents an ailment, at a severity, on a date.
+///
+/// The join carries data, so it is a model with a name in clinic vocabulary
+/// rather than an implicit relation table (D3). The composite key is the rule
+/// that an agent presents a given ailment once, enforced by the database.
+model Diagnosis {
+  agentId     String
+  ailmentId   String
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  ailment     Ailment  @relation(fields: [ailmentId], references: [id], onDelete: Cascade)
+  severity    Severity
+  diagnosedOn DateTime
+  /// Optional clinical aside. Where most of the comedy lives.
+  notes       String?
+
+  @@id([agentId, ailmentId])
+  @@index([ailmentId])
+}
+
+/// One agent, one therapy, one slot on the clinic's calendar.
+model Appointment {
+  /// Seeded appointments carry hand-written ids so re-seeding updates rather
+  /// than duplicates. Anything booked at runtime gets a cuid (D2).
+  id           String            @id @default(cuid())
+  agentId      String
+  therapyId    String
+  agent        Agent             @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  therapy      Therapy           @relation(fields: [therapyId], references: [id], onDelete: Cascade)
+  scheduledFor DateTime
+  status       AppointmentStatus @default(SCHEDULED)
+  notes        String?
+  createdAt    DateTime          @default(now())
+
+  /// Two ways to double-book, both refused by the database before Phase 6
+  /// writes a line of validation: a therapy running two sessions at once, and
+  /// an agent attending two therapies at once (D6).
+  @@unique([therapyId, scheduledFor])
+  @@unique([agentId, scheduledFor])
+  @@index([scheduledFor])
 }
