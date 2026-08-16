@@ -24,7 +24,7 @@ about setup.
 - Prisma wired to libSQL with a single throwaway model, pointed at a local file
   via `DATABASE_URL`.
 - One page that reads one row from the database and renders it.
-- Vitest and Playwright installed, one passing test each.
+- Vitest and Playwright installed, with passing tests for each.
 - ESLint + Prettier configured; `README.md` documents run/build/test/seed
   commands for **both** deploy targets.
 
