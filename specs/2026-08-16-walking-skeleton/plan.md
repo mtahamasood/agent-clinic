@@ -68,14 +68,16 @@ Group 4 proves the data path but leaves the product anonymous — a bare card wi
 a sentence in it. This group makes `/` recognisably AgentClinic and stops there.
 Bounded by D5.
 
-5.1 Root layout: `<html lang="en">`, a header carrying the clinic name, a
-    `<main>` landmark, and a sensible page container width.
+5.1 Root layout: `<html lang="en">` and a body composing three parts — a
+    `ClinicHeader` carrying the clinic name, a `<main>` landmark holding the
+    page container width, and a `ClinicFooter` of one line in clinic voice
+    (D8). Pages supply content only; they do not declare their own `<main>`.
 5.2 On `/`, an `<h1>` with the clinic name and a one-line tagline in clinic
     voice, taken from the one-liner in [mission.md](../mission.md#the-one-liner).
 5.3 Present the `ClinicNotice` `Card` from group 4 beneath it, framed as the
     clinic's notice board rather than a loose card.
-5.4 Add no navigation. Routes beyond `/` do not exist until Phase 2, and a link
-    to a 404 is worse than no link (D5).
+5.4 Add no navigation, in the header or the footer. Routes beyond `/` do not
+    exist until Phase 2, and a link to a 404 is worse than no link (D5).
 5.5 Check heading hierarchy — exactly one `<h1>` — and AA contrast on every text
     colour used.
 

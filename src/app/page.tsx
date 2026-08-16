@@ -4,8 +4,9 @@ import { getCurrentNotice } from "@/server/notices";
 export default async function Home() {
   const notice = await getCurrentNotice();
 
+  // The `<main>` landmark and container width come from the root layout.
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
+    <>
       <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
         AgentClinic
       </h1>
@@ -25,6 +26,6 @@ export default async function Home() {
           </p>
         </CardContent>
       </Card>
-    </main>
+    </>
   );
 }

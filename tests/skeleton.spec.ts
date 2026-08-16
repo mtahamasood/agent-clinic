@@ -23,3 +23,18 @@ test("the home page names the clinic and shows the seeded notice", async ({
     page.getByText("nothing said in the waiting room enters your context"),
   ).toBeVisible();
 });
+
+/**
+ * Check C8's landmarks. The root layout owns all three (D8), so this guards the
+ * composition itself — a page that reintroduced its own `<main>` would produce
+ * two, and `toBeVisible` on a strict locator fails rather than passing quietly.
+ */
+test("the root layout supplies the banner, main and contentinfo landmarks", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("banner")).toBeVisible();
+  await expect(page.getByRole("main")).toBeVisible();
+  await expect(page.getByRole("contentinfo")).toBeVisible();
+});
