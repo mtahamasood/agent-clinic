@@ -20,6 +20,16 @@ jobs:
   verify:
     runs-on: ubuntu-latest
 
+    # GitHub's default job limit is 6 hours. A suite that finishes in about two
+    # minutes does not need six hours to decide it has failed: on 2026-08-19 a
+    # post-merge build sat on `playwright install --with-deps` for nine minutes
+    # with nothing wrong in the commit, and would have sat there until lunch.
+    # Ten minutes is roughly twice the slowest honest run on record (4m04s), so
+    # a normal build never sees it and a hung one fails while it still reads as
+    # news. Set on the job rather than per step, because the next thing to hang
+    # will not be the step that hung last time.
+    timeout-minutes: 10
+
     env:
       # The self-hosted target: a libSQL file on disk. The Vercel target differs
       # only in this value — see specs/tech-stack.md, "Parity rules".

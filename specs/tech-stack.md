@@ -321,3 +321,38 @@ Phase branches outlive their merge. Process branches do not.
 
 *Source:* owner decision, 2026-08-19 — registered in
 [mission.md](mission.md#owner-decisions).
+
+## CI timeouts
+
+The `verify` job carries `timeout-minutes: 10`.
+
+GitHub's default is six hours. That default is written for builds that might
+legitimately take an afternoon; this suite takes about two minutes, and the
+slowest honest run on record is 4m04s. Between those two numbers sits the case
+this rule exists for: a step that is not slow but *stuck*, holding a required
+check open long enough that nobody can tell a hung build from a busy one.
+
+The prompting run is a real one. On 2026-08-19 the post-merge build of #12 —
+a merge touching three Markdown files and no code — sat on
+`playwright install --with-deps chromium` for nine minutes. The same step in the
+three runs before it took 70s, 74s, and 62s, and the pull-request build of that
+exact commit had already gone green in 2m12s. Nothing was wrong with the commit;
+the download stalled, and neither `apt-get` nor the browser fetch carries a
+client-side timeout, so it would have held the runner for the full six hours.
+
+Two consequences worth stating, since both were choices:
+
+- **Ten minutes**, not the tightest number that fits. A gate that trips on a
+  merely slow-but-working build teaches people to re-run without reading, which
+  is how a real failure gets clicked past.
+- **On the job, not the step.** Pinning a timeout to the Playwright install
+  would guard the step that happened to hang once. The job-level limit covers
+  every step including the ones added later, and GitHub names the running step
+  in the timeout message, so the diagnostic value of a per-step limit is already
+  there.
+
+This is a backstop, not a check. It reports nothing about the code — it only
+bounds how long the repository will wait to be told.
+
+*Source:* owner decision, 2026-08-19 — registered in
+[mission.md](mission.md#owner-decisions).

@@ -13,6 +13,16 @@ Dates are the date the work landed on `main`.
 
 ## 2026-08-19
 
+- **CI jobs time out after ten minutes.** GitHub's default is six hours, which
+  is why a stuck build looked like a busy one: the post-merge run of #12 — three
+  Markdown files, no code — sat nine minutes on `playwright install
+  --with-deps`, a step that had taken about 70s in each of the three runs before
+  it, on a commit whose pull-request build was already green. The download
+  stalled; nothing in that path carries a client-side timeout, so the run would
+  have held a required check open until the afternoon. Ten minutes is roughly
+  twice the slowest honest run on record, and the cap sits on the job rather
+  than the step that hung, because the next one to hang will be a different
+  step.
 - **Phase branches are kept; process branches are not** (#12). `phase-0-walking-skeleton`
   and `phase-1-four-nouns` stay on GitHub as end-of-phase checkouts for the
   owner's end-of-project review, and every later `phase-N-*` branch joins them.
