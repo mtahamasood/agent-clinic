@@ -297,3 +297,27 @@ feature, not a Git one — Git itself has no concept of a protected branch, only
 server-side hooks and `receive.denyNonFastForwards` to build one from. Anyone
 running their own copy who wants the same discipline has to configure their
 host's equivalent themselves.
+
+## Branch retention
+
+Phase branches outlive their merge. Process branches do not.
+
+- A branch that carries a phase — `phase-0-walking-skeleton`,
+  `phase-1-four-nouns`, and each one after them — is **kept** after its pull
+  request merges, on GitHub and in clones. The owner reviews the full set of
+  phase branches at the end of the project, so each one stays as a convenient
+  checkout of the repo at the end of its phase.
+- Every other branch — process changes, conventions, fixes — is **deleted on
+  merge** (`gh pr merge --delete-branch`, or the button on the PR page). The
+  pull request keeps its diff and conversation either way, so nothing readable
+  is lost.
+- GitHub's **"Automatically delete head branches"** setting stays **off**: it
+  cannot tell the two kinds apart, and it is exactly the sort of invisible
+  platform configuration this document exists to write down.
+- A phase branch deleted by mistake is an inconvenience, not a loss. The
+  phase's merge commit pins the end-of-phase state — `git checkout <merge>^2`
+  recovers it, and the PR page keeps the diff regardless. The branch is a
+  convenience for review, not the record.
+
+*Source:* owner decision, 2026-08-19 — registered in
+[mission.md](mission.md#owner-decisions).
