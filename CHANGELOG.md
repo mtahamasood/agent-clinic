@@ -13,6 +13,17 @@ Dates are the date the work landed on `main`.
 
 ## 2026-08-19
 
+- **CI stopped running everything twice** (#11). Unqualified `push` plus
+  `pull_request` triggers meant every commit on a branch with an open pull
+  request built the whole suite twice — 16 of 42 runs were redundant, and the
+  duplicate `verify` rows made "is CI done?" genuinely ambiguous. `push` is now
+  scoped to `main`, which is the post-merge check; pull-request builds cover
+  everything before it lands. A branch pushed with no pull request open now gets
+  no CI — open it as a draft to get the signal back.
+  - The changelog gate moved to the **end** of the job. It had been sitting
+    ahead of `npm test` and Playwright, so a missing entry skipped every
+    remaining step and cost all test signal on the branch until someone wrote
+    it. The cheapest failure to fix should not mask the most expensive one.
 - **A changelog, with a gate behind it** (#10). This file, generated from the
   history that preceded it. The requirement lives in `specs/tech-stack.md`;
   `npm run check:changelog` fails a pull request that touches `src/`, `specs/`,

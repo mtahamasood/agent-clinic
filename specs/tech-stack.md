@@ -164,8 +164,12 @@ how a changelog stops being read.
 
 - `npm run check:changelog` compares the branch against its merge base and fails
   when material paths changed and `CHANGELOG.md` did not. CI runs it inside the
-  required `verify` check. It fails loudly rather than skipping when it cannot
-  see enough history to answer — a check that passes blind is the C10 failure.
+  required `verify` check, on pull-request builds — which is where the rule
+  applies, since the rule is *before it merges* and a branch with no pull request
+  is not yet a merge candidate. It runs **last** in the job: a failing step skips
+  the rest, and a missing changelog entry must never mask a broken test. It fails
+  loudly rather than skipping when it cannot see enough history to answer — a
+  check that passes blind is the C10 failure.
 - The check tests only that the file was **touched**. Whether the entry is true
   or worth reading is a human's job, and the procedure is in
   `.claude/skills/changelog`.
