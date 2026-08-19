@@ -13,7 +13,7 @@ Dates are the date the work landed on `main`.
 
 ## 2026-08-20
 
-- **Phase 2 — the agent roster.** `/agents` lists the clinic's eight patients as
+- **Phase 2 — the agent roster** (#14). `/agents` lists the clinic's eight patients as
   cards: name, model family, and the ailments each one presents. The first route
   beyond `/`, the first list rendered from a relation, and the first layout in
   this project that could genuinely break — a card grid is where *fluid by

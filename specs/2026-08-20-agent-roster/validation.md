@@ -316,9 +316,26 @@ cards in a row end at the same place. Worth remembering the next time a
 judgement check reads like ceremony: this one paid for itself before the human
 even reached the phone.
 
-**Still open, and not the implementer's to close:**
+**B8 — green CI.** Passing on this branch, on pull request
+[#14](https://github.com/mtahamasood/agent-clinic/pull/14) — run
+[32303003672](https://github.com/mtahamasood/agent-clinic/actions/runs/32303003672).
+Worth noting that pushing the branch alone produced no run at all: `push` has
+been scoped to `main` since #11, so a branch with no pull request open gets no
+CI, exactly as that workflow's own comment warns. The pull request is what makes
+this check reachable.
 
-- **B8 — green CI.** The branch has not been pushed, so no run exists yet.
+**Phase 2 is closed, 2026-08-20.** A1–A10, B1–B8, C1–C21 and D1–D6 all hold, and
+no condition in section E does. Phase 3 may begin.
 
-**Phase 2 is not closed.** A1–A10, B1–B7, C1–C21 and D1–D6 hold, and no
-condition in section E does. It closes on a green CI run.
+Two things Phase 3 should read before it starts, in the way Phase 1 left D12 and
+the responsive note for this one:
+
+- **The case file inherits the roster's boundaries as its content.** Everything
+  D2 kept off a card — severities, intake notes, appointment history — is
+  Phase 3's material, and `getAgent()` already loads all of it. The roster is
+  not a link yet; making the cards link through is Phase 3's first task, and it
+  is the phase that finally satisfies Phase 0's D5 in the direction it was
+  always pointing.
+- **`loading.tsx` still cannot be seen**, and will not be until Phase 6 changes
+  the rendering strategy. A case file added at `/agents/[id]` prerenders the
+  same way. Do not write a check that claims to observe one.
