@@ -20,6 +20,16 @@ jobs:
   verify:
     runs-on: ubuntu-latest
 
+    # GitHub's default job limit is 6 hours. A suite that finishes in about two
+    # minutes does not need six hours to decide it has failed: on 2026-08-19 a
+    # post-merge build stalled inside `apt-get` for thirteen minutes with nothing
+    # wrong in the commit, and would have sat there until lunch. Ten minutes is
+    # roughly twice the slowest honest run on record (4m04s), so a normal build
+    # never sees it and a hung one fails while it still reads as news. Set on the
+    # job rather than per step, because the next thing to hang will not be the
+    # step that hung last time. See specs/tech-stack.md, "CI timeouts".
+    timeout-minutes: 10
+
     env:
       # The self-hosted target: a libSQL file on disk. The Vercel target differs
       # only in this value — see specs/tech-stack.md, "Parity rules".
@@ -56,8 +66,15 @@ jobs:
       - run: npm run check:provenance
       - run: npm test
 
+      # No `--with-deps`. That flag runs `apt-get update` against Ubuntu's
+      # mirrors before it fetches anything, and on 2026-08-19 it hung twice on
+      # the same commit when the runner's Azure mirror went unreachable and the
+      # public archive fallback stalled mid-transfer. The runner image already
+      # ships Chrome, Firefox, and Edge, so Chromium's shared libraries are
+      # present and the apt pass buys nothing here. See specs/tech-stack.md,
+      # "Playwright browser install", for what to do if that stops being true.
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       # Builds and starts the app itself, per playwright.config.ts (D3).
       - run: npm run test:e2e

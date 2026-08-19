@@ -321,3 +321,87 @@ Phase branches outlive their merge. Process branches do not.
 
 *Source:* owner decision, 2026-08-19 — registered in
 [mission.md](mission.md#owner-decisions).
+
+## CI timeouts
+
+The `verify` job carries `timeout-minutes: 10`.
+
+GitHub's default is six hours. That default is written for builds that might
+legitimately take an afternoon; this suite takes about two minutes, and the
+slowest honest run on record is 4m04s. Between those two numbers sits the case
+this rule exists for: a step that is not slow but *stuck*, holding a required
+check open long enough that nobody can tell a hung build from a busy one.
+
+The prompting run is a real one. On 2026-08-19 the post-merge build of #12 —
+a merge touching three Markdown files and no code — hung on
+`playwright install --with-deps chromium`, twice, on two different runners. The
+same step in the three runs before it took 70s, 74s, and 62s, and the
+pull-request build of that exact commit had already gone green in 2m12s. Nothing
+was wrong with the commit. The cause is in
+[Playwright browser install](#playwright-browser-install) below; what matters
+here is that `apt-get` carries no timeout on a connection that opens and then
+goes quiet, so the run would have held a required check open for the full six
+hours while reporting itself as in progress.
+
+Two consequences worth stating, since both were choices:
+
+- **Ten minutes**, not the tightest number that fits. A gate that trips on a
+  merely slow-but-working build teaches people to re-run without reading, which
+  is how a real failure gets clicked past.
+- **On the job, not the step.** Pinning a timeout to the Playwright install
+  would guard the step that happened to hang once. The job-level limit covers
+  every step including the ones added later, and GitHub names the running step
+  in the timeout message, so the diagnostic value of a per-step limit is already
+  there.
+
+This is a backstop, not a check. It reports nothing about the code — it only
+bounds how long the repository will wait to be told.
+
+*Source:* owner decision, 2026-08-19 — registered in
+[mission.md](mission.md#owner-decisions).
+
+## Playwright browser install
+
+CI installs the browser with `npx playwright install chromium` — **without**
+`--with-deps`.
+
+`--with-deps` is the documented way to install Playwright's system libraries,
+and on a bare machine it is the right flag. On a GitHub-hosted runner it is
+close to a no-op with a failure mode attached. The `ubuntu-24.04` image ships
+Chrome, Firefox, and Edge preinstalled, so the shared libraries Chromium needs
+are already on disk; what the flag adds is an `apt-get update` against Ubuntu's
+mirrors before Playwright fetches anything of its own.
+
+That apt pass is what hung on 2026-08-19, twice, on the same commit:
+
+```
+07:25:17  microsoft + google repos fetch fine, ~0.2s each
+07:25:47  Ign: azure.archive.ubuntu.com noble InRelease   (30s stall, ignored)
+07:25:48  Ign: retry 2
+07:25:50  Ign: retry 3
+07:25:54  Ign: retry 4
+07:25:54  Hit/Get: archive.ubuntu.com — three InRelease transfers open
+          ...13 minutes of silence...
+07:38:54  cancelled by hand
+```
+
+The runner's Azure-local Ubuntu mirror went unreachable, apt fell back to the
+public archive, opened three transfers there, and never received the rest. The
+last line of output came 38 seconds into a step that then produced nothing for
+thirteen minutes. The browser download never started, so caching
+`~/.cache/ms-playwright` would not have helped — the stall is upstream of
+anything Playwright fetches.
+
+Dropping the flag removes the only step in this workflow that touches Ubuntu's
+mirrors at all.
+
+**The trade-off, stated because it is a real one.** This leans on the runner
+image continuing to carry those libraries. If a future image drops one, the
+failure surfaces at `npm run test:e2e` as a browser that will not launch, which
+is a worse error message than a failed install would have been. The fix at that
+point is to put `--with-deps` back and pair it with a retry, not to debug the
+e2e suite: a Playwright browser that cannot start on a runner where the tests
+used to pass is a system-library problem until proven otherwise.
+
+*Source:* owner decision, 2026-08-19 — registered in
+[mission.md](mission.md#owner-decisions).
