@@ -13,6 +13,14 @@ Dates are the date the work landed on `main`.
 
 ## 2026-08-19
 
+- **Phase branches are kept; process branches are not** (#12). `phase-0-walking-skeleton`
+  and `phase-1-four-nouns` stay on GitHub as end-of-phase checkouts for the
+  owner's end-of-project review, and every later `phase-N-*` branch joins them.
+  Process branches keep deleting themselves on merge. Recorded in
+  `specs/tech-stack.md` before the habit of `--delete-branch` could reach
+  Phase 2 and quietly destroy the collection. Nine stale remote-tracking refs —
+  branches GitHub deleted that the local clone still listed — were pruned in the
+  same sitting, with `fetch.prune` turned on so the drift cannot rebuild.
 - **CI stopped running everything twice** (#11). Unqualified `push` plus
   `pull_request` triggers meant every commit on a branch with an open pull
   request built the whole suite twice — 16 of 42 runs were redundant, and the
