@@ -54,6 +54,12 @@ Dates are the date the work landed on `main`.
     measurement is — a resize and a navigation back to back, with the computed
     size read immediately. It is now retried as a unit, and the retry was proved
     not to have neutered it by inverting the utilities and watching it fail.
+  - **C21 — "it reads well on a phone" — passed**, owner verdict 2026-08-20.
+    The judgement check the roadmap asked this phase to write, and it paid for
+    itself before the human reached the phone: the desktop capture taken as its
+    companion evidence is what found the ragged grid row, a defect no C-check
+    was going to catch because they all measure widths and none of them measures
+    whether two cards in a row end at the same place.
   - `Badge` is the second shadcn primitive, and the cap Phase 0's D2 set is back
     down to one for Phase 3. No dependency was added: `class-variance-authority`
     was already here for `Card`.

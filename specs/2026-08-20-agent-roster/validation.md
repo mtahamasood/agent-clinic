@@ -148,7 +148,7 @@ Inherited by every phase from
 | C18 | No bespoke breakpoint | Only Tailwind's default breakpoint prefixes appear, and no fixed width. `grep -rnE "\[[0-9]+px\]\|min-\[\|max-\[\|w-\[" src/app src/components --exclude-dir=ui` returns nothing (D4). **Narrowed during the walk:** as first written it swept `src/` whole and tripped on `focus-visible:ring-[3px]` inside the vendored `badge.tsx`. A focus ring is not a breakpoint and not a layout width, and a shadcn primitive is a file we accepted as generated — the same standing `card.tsx` has had since Phase 0. The convention binds the layout we write; the check now says so instead of collecting a false positive that would teach the next reader to ignore it |
 | C19 | Cards are fluid | At 320px no card is wider than the container, and badges wrap rather than widening the card (plan 7.6) |
 | C20 | The container behaves as Q1 decided | The cap assertion in `tests/responsive.spec.ts` matches the answer recorded in [requirements.md](requirements.md#open-questions) — and if the answer was *widen*, the test constant changed in the same commit that changed the layout, with D4 cited (D4) |
-| C21 | It reads well on a phone | **Evidence:** the production build (`npm run build && npm start`) at a 393px-wide viewport, on `/agents`, against the full seed of eight patients — not a screenshot, not `next dev`, and not the desktop layout narrowed by eye. **Procedure:** open it, scroll the roster top to bottom, and read three cards including the longest one (the agent with the most ailments). **Passes when** the roster reads as a list of patients rather than a stack of boxes: every card's content is legible without zooming, nothing is clipped or crowded against an edge, and the badges read as a set of conditions rather than as wrapped debris. A judgement, not a measurement — recorded below with who made it and when |
+| C21 | It reads well on a phone | **Evidence:** the production build (`npm run build && npm start`) at a 393px-wide viewport, on `/agents`, against the full seed of eight patients — not a screenshot, not `next dev`, and not the desktop layout narrowed by eye. **Procedure:** open it, scroll the roster top to bottom, and read three cards including the longest one (the agent with the most ailments). **Passes when** the roster reads as a list of patients rather than a stack of boxes: every card's content is legible without zooming, nothing is clipped or crowded against an edge, and the badges read as a set of conditions rather than as wrapped debris. A judgement, not a measurement — recorded with who made it and when. **Passed** — owner verdict, 2026-08-20, on the production build at 393px with the full seed of eight patients, and the desktop counterpart alongside it |
 
 C21 is the human half of the roadmap's exit criterion, and it is written this
 way because [tech-stack.md](../tech-stack.md#judgement-checks) requires a check
@@ -293,14 +293,21 @@ than a tick:
   26111 from the original mistake. Documented because it was run, which is the
   same standard section A holds every other command to.
 
-**Still open, and neither is the implementer's to close:**
+**C21 is closed. Passed**, owner verdict 2026-08-20, on the evidence its row
+names: the production build at 393px against the full seed of eight patients,
+with the desktop counterpart alongside it. The row carries the verdict, its
+author, and its date, the way C7 and C16 carry theirs.
 
-- **C21 — it reads well on a phone.** The evidence named in the row was captured
-  and is with the owner: the production build at 393px, full roster, plus the
-  desktop counterpart. The verdict, its author, and its date go in the row when
-  it is given.
+The desktop capture taken for it earned its keep twice over. It is what found
+the ragged grid row above — a defect no check in section C was going to catch,
+because every one of them measures widths and none of them measures whether two
+cards in a row end at the same place. Worth remembering the next time a
+judgement check reads like ceremony: this one paid for itself before the human
+even reached the phone.
+
+**Still open, and not the implementer's to close:**
+
 - **B8 — green CI.** The branch has not been pushed, so no run exists yet.
 
-**Phase 2 is not closed.** A1–A10, B1–B7, C1–C20 and D1–D6 hold, and no
-condition in section E does. It closes when C21 carries a verdict and CI is
-green.
+**Phase 2 is not closed.** A1–A10, B1–B7, C1–C21 and D1–D6 hold, and no
+condition in section E does. It closes on a green CI run.
