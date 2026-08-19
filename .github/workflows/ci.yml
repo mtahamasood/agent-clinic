@@ -4,7 +4,16 @@ name: CI
 # empty. The clean-clone claim in the phase spec cannot be verified on the
 # machine that wrote the code — this is the only place it gets tested.
 on:
+  # Unqualified `push` plus `pull_request` ran the whole suite twice for every
+  # commit on a branch with an open PR — 16 of 42 runs were redundant. `main` is
+  # pull-request only (see specs/tech-stack.md, "Branch protection"), so a PR
+  # build covers every change before it lands and this push build is the
+  # post-merge check on the merge result.
+  #
+  # Cost accepted: a branch pushed with no PR open gets no CI. Open the PR as a
+  # draft to get it back.
   push:
+    branches: [main]
   pull_request:
 
 jobs:
@@ -45,10 +54,6 @@ jobs:
       # "Requirement provenance". Runs inside `verify` so branch protection
       # makes it binding: an unattributed requirement cannot reach main.
       - run: npm run check:provenance
-      # A branch that changed the product or the constitution also updates
-      # CHANGELOG.md — see specs/tech-stack.md, "Changelog". Inside `verify`, so
-      # branch protection makes it binding.
-      - run: npm run check:changelog
       - run: npm test
 
       - name: Install Playwright browser
@@ -56,6 +61,16 @@ jobs:
 
       # Builds and starts the app itself, per playwright.config.ts (D3).
       - run: npm run test:e2e
+
+      # Last on purpose. A missing changelog entry is the cheapest failure here
+      # to fix and the least urgent to learn about, so it runs after everything
+      # that could tell you something you did not already know — a failing step
+      # skips the rest of the job, and a missing entry must never mask a broken
+      # test. Still inside `verify`, so branch protection keeps it binding.
+      #
+      # On a push build the script skips itself: HEAD is main, and the entry
+      # arrived with the merge.
+      - run: npm run check:changelog
 
       - uses: actions/upload-artifact@v7
         if: ${{ failure() }}
