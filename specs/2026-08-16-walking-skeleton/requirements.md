@@ -337,3 +337,42 @@ first become real code:
 
 None. This spec is closed; ambiguity found during implementation goes to the
 backlog or reopens this file, not into the code.
+
+## Amendments
+
+Constitution changes made **after this phase closed** that reach into code this
+phase still owns. They are recorded here rather than edited into the decisions
+and checks above: [validation.md](validation.md) is the record of a walk that
+actually happened, and inserting a check nobody ran — then ticking it — is the
+failure mode this project has already caught twice (C10 in this phase, C16 in
+Phase 1).
+
+### 2026-08-19 — the responsive-design convention
+
+The web UI follows responsive design: owner decision registered in
+[mission.md](../mission.md#owner-decisions), specified as a convention in
+[tech-stack.md](../tech-stack.md#responsive-design), and a standing quality gate
+from that date. It reaches this phase because this phase's output is still on
+every screen — the root layout of D8, the `<main>` container width, the header,
+and the footer are what every later route renders inside.
+
+**Assessed, not assumed.** The layout was already fluid: `mx-auto w-full
+max-w-2xl px-6` on all three containers, no fixed pixel width anywhere in the
+phase's output, and the `max-w-2xl` cost accepted in D8 is a cap rather than a
+width. So **D8 stands unrevised** and no decision above changes.
+
+What the phase lacked was a mechanism, which is the same defect C10 turned out
+to be: the constitution asserted a bar and nothing measured it. That is now
+`tests/responsive.spec.ts` plus the second Playwright viewport in
+`playwright.config.ts`, which cover this phase's layout as a consequence of
+covering every phase after it.
+
+One change did land in this phase's code: the vertical rhythm on `<main>` moved
+from a constant `py-16` to `py-12 sm:py-16`. 64px of dead space top and bottom
+costs roughly a fifth of a phone viewport before any content appears. That is a
+layout fault at a width, not a design pass — the Phase 8 boundary in D5 is
+untouched.
+
+No new C-numbered check is added here. Phase 0's checks are closed, and the
+convention is inherited by every phase from
+[tech-stack.md](../tech-stack.md#quality-gates) rather than restated per phase.

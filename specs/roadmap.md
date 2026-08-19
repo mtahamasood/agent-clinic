@@ -15,6 +15,12 @@ Phase 0, each one ends with something you can click in a browser.
 - **No requirement without provenance.** Every normative statement names its
   source — stakeholder brief, constitution clause, or dated owner decision. See
   [tech-stack.md](tech-stack.md#requirement-provenance).
+- **Responsive from the first pixel.** Any phase that puts a page on screen
+  meets the responsive-design convention in
+  [tech-stack.md](tech-stack.md#responsive-design), and proves it at both
+  viewports in the Playwright pass. It is not a Phase 8 polish item and never
+  was: a layout built at desktop width and narrowed later is a rewrite, not a
+  polish pass.
 
 ---
 
@@ -60,9 +66,18 @@ return sensible typed results.
 - `/agents` lists agent patients as cards: name, model family, presenting
   ailments.
 - Empty state and loading state, both in clinic voice.
-- Responsive down to mobile.
+- The first multi-card layout, and so the first real exercise of the
+  responsive-design convention in
+  [tech-stack.md](tech-stack.md#responsive-design) — the roster reflows from one
+  column to several without a bespoke breakpoint. The convention binds every
+  phase, not this one; what is specific to Phase 2 is that a card grid is the
+  first thing here that can genuinely break.
 
-**Exit:** the roster renders live seed data and reads well on a phone.
+**Exit:** the roster renders live seed data, and the Playwright suite passes at
+both viewports (phone and desktop). "Reads well on a phone" is the human half of
+that and is a judgement check — so the Phase 2 validation file names its
+evidence, its procedure, and its pass condition, per
+[tech-stack.md](tech-stack.md#judgement-checks).
 
 ---
 
@@ -146,6 +161,11 @@ clicking through.
 **Exit:** a live URL that looks deliberate on desktop and mobile, **and** a
 self-hosted run of the same commit — booking included — that works with no
 network beyond localhost.
+
+"Looks deliberate on mobile" here judges the *treatment*. Whether the layout
+holds at every width was settled phase by phase against
+[tech-stack.md](tech-stack.md#responsive-design); if it is still open by the time
+this phase starts, an earlier phase shipped without meeting its quality gates.
 
 ---
 

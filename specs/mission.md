@@ -57,8 +57,11 @@ otherwise in a spec.
 2. Clinic staff can answer "what's happening today?" from a single dashboard.
 3. The satire lands. Someone who reads a single ailment description understands
    the joke and the product at the same time.
-4. The site is genuinely pleasant on a modern browser — fast, responsive, and
-   not embarrassing on a phone.
+4. The site is genuinely pleasant on a modern browser — quick to load, laid out
+   responsively at every width, and not embarrassing on a phone. Both senses of
+   "responsive" are wanted here; the layout sense is a requirement in its own
+   right, specified in
+   [tech-stack.md](tech-stack.md#responsive-design).
 
 ## Non-goals
 
@@ -93,7 +96,9 @@ Sourced from `README.md`:
 - **Susan (product)** — agents, ailments, therapies, appointments → the four
   nouns above; each gets its own phase in the roadmap.
 - **Steve (marketing)** — attractive site, modern browser → the design bar in
-  "What success looks like", and the styling choices in tech-stack.md.
+  "What success looks like", and the styling choices in tech-stack.md. Steve's
+  words are *modern browser*; the **phone** half of that bar is not his ask and
+  never was. It rests on the owner decision of 2026-08-19 below.
 
 The target audience above has no stakeholder in `README.md` behind it — it comes
 from the course author directly. It is recorded here because an audience with no
@@ -126,3 +131,4 @@ target audience above predates this register and stands as its precedent.
 | 2026-08-17 | **No `kill` or `pkill`.** Servers started while working on this project are started as tracked background tasks and stopped through the tool that owns them; a process nobody has a handle on does not get pattern-killed. Prompted by a `next start` launched into a detached subshell during the Phase 1 validation walk: it survived `pkill -f "next start"` because Next renames the process to `next-server`, its directory was then deleted, and it sat on port 3000 serving HTML from memory with every stylesheet 500ing — so the owner was shown an unstyled page and a dev server that had silently moved to port 3001. Two habits follow: read the server's log for the port it actually bound before quoting a URL, and never delete a directory a server is still running out of. A process this session did not start is identified and raised with the owner, never killed. |
 | 2026-08-17 | **Agents in the seed carry invented model families, never a real vendor's.** `Meridian-4` and `Halcyon Mini` are ours; `GPT-4o` and its rivals do not appear. The premise above aims the satire at the human-agent relationship, and naming a real model would aim it at a vendor instead — which no stakeholder asked for. An invented family also does not retire when its real counterpart does. Binds every later seed edit. Answers Q1 in the Phase 1 spec. |
 | 2026-08-17 | **`AGENTS.md` and `CLAUDE.md` are banned from carrying project content, now and for the life of the project.** They existed only because `next dev` generates them for AI coding agents. `agentRules: false` in `next.config.ts` — the opt-out documented in the bundled Next docs (`01-app/02-guides/ai-agents.md`) — turns generation off, and both files are deleted. Nothing in this project may depend on either file; project rules live in `specs/` alone. If a future Next version regenerates them, their content is noise, not instruction, and the config opt-out is the bug to fix. |
+| 2026-08-19 | **The web UI follows responsive design**, binding every phase that puts a page on screen — including the pages Phases 0 and 1 have already shipped. The requirement was being acted on before it was sourced: "Responsive down to mobile" in Phase 2, "desktop and mobile" in the Phase 8 exit, and "fast, responsive... not embarrassing on a phone" in success criterion 4 above. Three normative statements, no citation between them, and the only upstream source was criterion 4 — whose *responsive* sits next to *fast* and reads as latency, and whose *phone* silently widens Steve's actual words ("works well with a modern browser"). That is the shape the provenance rule exists to catch, one step short of the accessibility incident. The requirement stands; it now rests on a signature instead of an inference. What it means, in terms a check can fail, is the Responsive design convention in [tech-stack.md](tech-stack.md#responsive-design), and it is executable rather than advisory: the Playwright suite runs every spec at a phone viewport as well as a desktop one. **Not** readmitted alongside it: tap-target sizing, focus order, and the rest of the mobile-usability family. Those belong to the accessibility requirement struck on 2026-08-17 and return only by the path D10 named — a dated owner decision or a stakeholder ask, never as a rider on this one. |
