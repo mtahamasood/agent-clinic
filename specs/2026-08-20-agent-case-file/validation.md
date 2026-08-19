@@ -225,7 +225,85 @@ branch for the owner's end-of-project review.
 
 ## Result
 
-Not yet walked. This section is filled in when the phase closes, in the shape
-Phases 0–2 used: the machine and Node version section A ran on, what each step
-did, the findings worth more than a tick, the measured status code from A9, and
-the judgement verdict for C26 with its author and date.
+**Walked 2026-08-20 on Linux 6.18 (WSL2), Node v22.23.2.** Sections A, B, C and
+D hold, with two checks still open at the end and both named there: C26, which is
+the owner's to sign off, and B8, which needs a pull request to exist before it
+can be reached.
+
+Section A ran in a fresh clone of this branch at
+`/tmp/.../scratchpad/clone`, in order — with A8 taken before A7, which changes
+nothing about either:
+
+- **A2** `npm install` — clean, no prompt, no manual step.
+- **A4** `npm test` on the bare clone, before anything else — 56 tests pass and
+  no `clinic.db` exists afterwards. The twelve new ones are the date formatter,
+  the ailment list's order and tiebreak, and both empty branches.
+- **A5** `npm run migrate` — applied. `git diff --name-only origin/main...HEAD`
+  over `prisma/`, `package.json`, `package-lock.json`, `src/server/` and
+  `src/app/page.tsx` is **empty**, which is C4, C18, D3 and D4 in one command:
+  this phase added a route and changed no schema, no dependency, no query, and
+  no existing page.
+- **A6** `npm run seed` — 8 patients, 8 ailments, 6 therapies, 3 on today's
+  calendar.
+- **A8** `npm run build && npm start` — the build lists `/agents/[id]` as `●
+  (SSG)` with eight generated paths, which is C3 and D5. The served case file
+  carries `Meridian-4`, `Chronic Context Loss`, `Severe`, the intake notes, and
+  `Context Window Hygiene` under **Still to come** — profile, diagnosis and
+  appointment, all from the database.
+- **A9** `/agents/not-a-patient` — the clinic's own copy, and **HTTP 200**. The
+  finding is in C6 and D4; the owner accepted it as measured on 2026-08-20.
+- **A7** `npm run dev` — all eight patients open a file (200, with the
+  *Presenting ailments* section on each), and `/` still shows the notice board
+  and nothing else.
+- **A10** cold offline build in a `unshare -rn` namespace, with the absence of a
+  route out confirmed first (`curl https://registry.npmjs.org` failed inside
+  it). `rm -rf .next` beforehand. Built, served the case file from the database,
+  and returned the same 200 on the unknown patient that the online run did.
+
+Three servers were started during the walk, all as tracked tasks wrapped so the
+process group dies with the task, and all three verified stopped with `ss` and
+`pgrep` afterwards. Nothing was stranded and nothing was pattern-killed, which
+is the 2026-08-20 owner decision working as intended one phase after the walk
+that produced it.
+
+Three things the walk found are worth more than a tick:
+
+- **The in-voice 404 returns 200, and the page that returns a correct 404 is
+  the one that reads badly.** D4 predicted the status code was a measurement
+  rather than a fact; it is, and it came back the wrong way round.
+  `/agents/not-a-patient` serves the clinic's copy with `200` and
+  `x-nextjs-prerender: 1`, cached for 300 seconds, while `/no-such-route` —
+  which never reaches this segment — returns `404` with Next's default page. Put
+  to the owner with the three options D4 lists and **accepted as measured**: the
+  roadmap asked for an unknown agent to be handled in voice, and it is. The
+  alternatives each cost more than the number is worth today, and Phase 8
+  inherits a measurement instead of a suspicion.
+- **`npm run seed` is not safe to re-run across days.** Found by re-seeding a
+  local database that had been seeded three days earlier: `P2002` on
+  `Appointment`'s `(agentId, scheduledFor)`, because today's `dayOffset: 0` slot
+  for Atlas lands on the instant an earlier run wrote for `dayOffset: +3`. A
+  fresh clone never reaches it, which is why three validation walks had not —
+  the walk clones, migrates and seeds exactly once. It is a Phase 1 defect, it
+  contradicts a line in `README.md`, and the owner sent it to Phase 6 on
+  2026-08-20 rather than have it fixed on this branch: the collision is with the
+  slot-uniqueness constraints that phase has to reason about anyway. Registered
+  in [mission.md](../mission.md#owner-decisions) and added to Phase 6 in the
+  [roadmap](../roadmap.md#phase-6--booking).
+- **The upcoming/past boundary is a build-time fact.** The route prerenders, so
+  the instant the split is measured against is the moment of the build, and an
+  appointment crosses from *Still to come* to *Already seen* when the site is
+  rebuilt rather than when its hour arrives. Written into D7. It is D12's
+  staleness rather than a new one, but it is the first place in this project
+  where prerendering changes what a page *means* rather than only how fresh it
+  is — which makes it Phase 6's problem in a more pointed way than `/` ever was.
+
+**C26 is open.** The evidence its row names — the production build at 393px, on
+Bodhi's and Atlas's files and the unknown-patient page — has to be read by a
+human, and the verdict recorded here with its author and date. The Phase 2 walk
+is the argument for not skipping it: the capture taken for that phase's
+judgement check is what found a ragged grid row no automated check would have
+caught.
+
+**B8 is open.** Pushing the branch alone produces no run — `push` has been
+scoped to `main` since #11 — so the pull request is what makes the check
+reachable.
