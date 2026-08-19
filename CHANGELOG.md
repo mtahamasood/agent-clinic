@@ -13,6 +13,81 @@ Dates are the date the work landed on `main`.
 
 ## 2026-08-20
 
+- **Phase 3 — the agent case file.** `/agents/[id]` opens one patient's record:
+  profile and intake notes, every diagnosis with its severity, and the
+  appointments they have had and have coming. The roster's cards link through by
+  the patient's name, which is the first link between two pages of our own and
+  the first time Phase 0's no-dead-links rule points *towards* a route rather
+  than away from one.
+  - **Two owner answers, taken before code was written.** Ailments read **worst
+    first**, which reverses what `src/lib/severity.ts` had asserted in two doc
+    comments since Phase 1 — a written source is not something an implementation
+    overrules by itself, so it went to the owner and the comments were corrected
+    with the sort. And an ailment entry carries **no summary**: the sentence is
+    the same for every patient who presents with that condition, and the
+    clinical aside beside it is about this one.
+  - **The in-voice 404 returns HTTP 200, which was measured rather than
+    assumed.** Next serves a not-found response as 200 when it streams; the
+    walk found `/agents/not-a-patient` returning 200 with the clinic's own copy
+    and `/no-such-route` returning a correct 404 with Next's default page — the
+    wrong status on the page that reads well, the right one on the page that
+    does not. Recorded in D4 with the trade it sits on rather than worked
+    around: the only in-scope lever is `dynamicParams = false`, which buys the
+    status code by losing the in-voice page.
+  - **The case file shows what is still to come, not only history.** The roadmap
+    says "appointment history", and Phase 6's exit criterion is that a newly
+    booked appointment appears here — which is in the future. Split into two
+    lists, because a single one ordered by date puts next week above last month
+    and reads as a history that starts on Thursday.
+  - **Keeping the route prerendered was work, not an inheritance.** A dynamic
+    segment renders on demand unless `generateStaticParams()` says otherwise, so
+    without it this phase would have quietly changed the rendering strategy that
+    Phase 6 owns. The build now lists eight generated paths, and the walk reads
+    that line rather than trusting the source.
+  - **A Phase 1 defect found and parked, not quietly patched.** `npm run seed`
+    fails on a database seeded on an earlier day — relative slots move, and
+    today's `dayOffset: 0` lands on the instant an earlier run wrote for
+    `dayOffset: +3`, colliding with `Appointment`'s slot uniqueness. A fresh
+    clone never reaches it, which is why three validation walks had not. Sent to
+    Phase 6, which writes appointments and has to reason about those constraints
+    anyway; the README's "safe to re-run" is knowingly left standing until the
+    fix makes it true.
+  - **Reviewed after it was walked, and the review falsified four of its own
+    checks.** Three reviewers over the branch — spec discipline, code
+    correctness, tests — found that the alphabetical tiebreak, the prose-wrap
+    measurement, the renamed-column claim and the "dates come from one place"
+    grep could none of them fail. Each was demonstrated dead by mutation rather
+    than argued: delete the tiebreak, add `whitespace-nowrap`, rename a column,
+    run the documented command. All four are rewritten, and each rewrite was
+    re-run against the same mutation to watch it go red. The stories are in the
+    rows in `specs/2026-08-20-agent-case-file/validation.md`, which carry what
+    they replaced.
+  - **`npm run typecheck` now regenerates the Prisma client (D11).** Three
+    phases have promised that renaming a column breaks the typecheck; it did
+    not, because the generated client is gitignored and written only by
+    `postinstall`, so `tsc` was reading a stale copy. The derivation was always
+    right and the trigger was wrong. Fixing the script closes the gap rather
+    than documenting it.
+  - **Name ordering is pinned to a collator (D8, extended).** The phase that
+    pinned the date locale — so that a rendered string would not depend on the
+    machine — left `localeCompare` bare in the severity tiebreak and the
+    roster's badges, where it has the same exposure. `src/lib/name-order.ts`.
+  - **A requirement with no source, raised rather than attributed — and then
+    given one.** The page title traced to a validation row in a closed phase,
+    which is not one of the three sources the provenance rule admits, so it had
+    been binding for two phases on nothing. Raised as Q3 with the honest
+    alternative of deleting the titles outright; the owner delegated the choice
+    and the recommendation was taken. Page titles now name their page,
+    `/agents` retroactively included, as a dated register entry and D12. The
+    entry records that the choice was delegated rather than pronounced, because
+    a record that smoothed that over would be a tidier version of the fault it
+    corrects.
+  - **Two new modules, two new components, no new dependency and no new query.**
+    `src/lib/clinic-date.ts` pins the date format and `src/lib/name-order.ts`
+    pins name collation, so neither a rendered string nor a rendered order
+    depends on the machine; `getAgent()` and `listAgents()` are untouched, which
+    is the second and larger test of Phase 1's D9.
+
 - **Phase 2 — the agent roster** (#14). `/agents` lists the clinic's eight patients as
   cards: name, model family, and the ailments each one presents. The first route
   beyond `/`, the first list rendered from a relation, and the first layout in

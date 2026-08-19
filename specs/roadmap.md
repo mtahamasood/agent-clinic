@@ -122,6 +122,12 @@ spec before implementation.
 - Server Action writes the `Appointment`; validation prevents double-booking the
   same slot and rejects past times.
 - Confirmation page, and the appointment appears on the agent's case file.
+- **Fix the seed's day-crossing collision.** `npm run seed` fails with `P2002` on
+  a database seeded on an earlier day: relative slots move, and today's
+  `dayOffset: 0` lands on the instant an earlier run wrote for `dayOffset: +3`.
+  It arrives here because the collision is with the slot-uniqueness constraints
+  this phase's validation is built on — owner decision, 2026-08-20, registered in
+  [mission.md](mission.md#owner-decisions).
 - **Pick a rendering strategy first.** Pages are prerendered at build time today,
   so a page that reads written data serves stale HTML until the next build —
   verified in Phase 1, recorded as
@@ -154,6 +160,14 @@ clicking through.
 - Marketing-grade landing treatment for Steve: typography, spacing, motion where
   it earns its place.
 - Metadata, favicon, social preview.
+- **Settle the site's 404.** An unknown *agent* is handled in voice and returns
+  **HTTP 200** — measured on 2026-08-20 and accepted by the owner as the price of
+  keeping the in-voice page — while an unmatched URL anywhere else returns a
+  correct 404 carrying Next's default page. The wrong status on the page that
+  reads well, the right one on the page that does not. Both halves are a
+  whole-site question, which is this phase's, with every route in view. Full
+  measurement and the trade in D4 of the
+  [Phase 3 requirements](2026-08-20-agent-case-file/requirements.md).
 - Deploy **both** ways: self-hosted (`next build` + `next start`) against a local
   libSQL file, and Vercel against a hosted Turso database.
 - `README.md` carries verified step-by-step instructions for each path.

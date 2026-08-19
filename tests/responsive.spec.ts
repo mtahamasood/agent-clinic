@@ -18,8 +18,10 @@ import { expect, test } from "@playwright/test";
  */
 
 // Every route the site has. A new phase adds its route here; a phase that
-// forgets is a phase whose layout is unmeasured.
-const ROUTES = ["/", "/agents"];
+// forgets is a phase whose layout is unmeasured. The case file is a seeded id
+// rather than a placeholder — `atlas` is hand-written in prisma/seed-data.ts
+// precisely so it can be named in a URL.
+const ROUTES = ["/", "/agents", "/agents/atlas"];
 
 // 320px is the narrowest viewport the convention supports; 1536px is a wide
 // desktop. The middle values sit either side of Tailwind's `sm` and `lg`
@@ -151,6 +153,13 @@ test("the roster is one column on a phone and more than one on a desktop", async
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/agents");
     const cards = page.locator("ul > li > [data-slot='card']");
+    // Wait for the thing being measured to be on screen. `boundingBox()`
+    // returns null for an element that is not visible yet rather than waiting
+    // for one, so measuring straight after a navigation is a race — it lost
+    // once during the Phase 3 review, on the phone project, and passed every
+    // run either side of it. Pinned rather than re-run: the property is not
+    // racy, the measurement was.
+    await expect(cards.nth(1)).toBeVisible();
     const first = await cards.nth(0).boundingBox();
     const second = await cards.nth(1).boundingBox();
     expect(first).not.toBeNull();
@@ -191,4 +200,55 @@ test("no roster card outgrows its container at 320px", async ({ page }) => {
       `roster card ${i} reaches ${box!.x + box!.width}px in a container that ends at ${limit}px`,
     ).toBeLessThanOrEqual(limit);
   }
+});
+
+/**
+ * The case file's version of the risk the badge row was on the roster (C24).
+ *
+ * A card grid breaks by being too wide; a record page breaks by refusing to
+ * wrap — an intake note or a clinical aside that renders as one long line
+ * pushes its own box's contents past the edge.
+ *
+ * **Measured as overflow, not as geometry, and the reason is a finding from
+ * this branch's own review.** The first version of this test compared each
+ * block's `boundingBox()` against the container's right edge, which cannot
+ * fail: a `<p>` is a block box, so its border box is the container's content
+ * width no matter what the text inside does. Adding `whitespace-nowrap` to the
+ * intake notes was measured to leave it green. `scrollWidth > clientWidth` is
+ * the property that actually moves when content refuses to wrap.
+ *
+ * Bodhi rather than Atlas, because C24 names three kinds of prose — intake
+ * notes, clinical asides, and appointment notes — and Atlas's two appointments
+ * carry no notes at all, so a third of the claim had no evidence on the route
+ * being measured.
+ */
+test("the case file's prose wraps inside the container at 320px", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.goto("/agents/bodhi");
+
+  const main = page.getByRole("main");
+  // All three kinds of prose are on this page, so the measurement below covers
+  // what C24 claims rather than two thirds of it.
+  await expect(main).toContainText("A research assistant throttled"); // intake
+  await expect(main).toContainText("count against its quota"); // clinical aside
+  await expect(main).toContainText("Returned four minutes later"); // session note
+
+  const overflowing = await main
+    .locator("p, li, h1, h2, h3")
+    .evaluateAll((blocks) =>
+      blocks
+        .filter((block) => block.scrollWidth > block.clientWidth)
+        .map((block) => ({
+          text: (block.textContent ?? "").slice(0, 40),
+          scrollWidth: block.scrollWidth,
+          clientWidth: block.clientWidth,
+        })),
+    );
+
+  expect(
+    overflowing,
+    `these blocks refuse to wrap at 320px: ${JSON.stringify(overflowing)}`,
+  ).toEqual([]);
 });
