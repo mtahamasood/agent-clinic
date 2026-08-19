@@ -16,7 +16,11 @@ export default defineConfig({
     // Seed data lives in prisma/, so its consistency test does too. Without
     // this pattern that file is never collected — a test that cannot fail
     // reads as coverage and provides none.
-    include: ["src/**/*.test.ts", "prisma/**/*.test.ts"],
+    // `.tsx` is here for the roster card's test (Phase 2): the card's
+    // undiagnosed branch is unreachable from a seeded demo, so it is rendered
+    // with react-dom/server rather than eyeballed. Same lesson as the pattern
+    // above — a test the runner never collects reads as coverage and is none.
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx", "prisma/**/*.test.ts"],
   },
   resolve: {
     alias: {
