@@ -288,10 +288,21 @@ than a tick:
   anything scripted — so the next phase inherits a version that does not strand
   a server when it is automated. The scripted form was then **run**, twice, on
   2026-08-20: it built cold and offline, reported the port it bound, served
-  `Chronic Context Loss` from the database, and left nothing behind after
-  `TaskStop` — the only `next-server` still on the machine afterwards was pid
-  26111 from the original mistake. Documented because it was run, which is the
-  same standard section A holds every other command to.
+  `Chronic Context Loss` from the database, and left nothing behind when the
+  task was stopped. Documented because it was run, which is the same standard
+  section A holds every other command to.
+
+  The tail of this has its own lesson, and it is recorded as an owner decision
+  of 2026-08-20 in [mission.md](../mission.md#owner-decisions) with the
+  procedure in `.claude/skills/local-server`. Stopping a *namespaced* task takes
+  the namespace and everything in it, which is why the recipe above is clean.
+  Stopping an ordinary `npm start` task does **not**: it reaches the wrapper and
+  not the worker, because Next renames its worker to `next-server`. That is not
+  a mistake anyone made — it is what the stop does — so the fix belongs in how
+  the server is launched (`set -m` and a `trap` that kills the process group,
+  verified twice, leaking nothing) rather than in anybody's diligence. Both
+  strays from this walk were cleared by PID after being identified, on the
+  owner's instruction.
 
 **C21 is closed. Passed**, owner verdict 2026-08-20, on the evidence its row
 names: the production build at 393px against the full seed of eight patients,

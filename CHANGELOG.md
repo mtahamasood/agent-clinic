@@ -65,6 +65,24 @@ Dates are the date the work landed on `main`.
     was already here for `Card`.
   - Vitest now collects `.tsx` tests, so the card's undiagnosed branch — the one
     the seed can never reach — is rendered rather than eyeballed.
+  - **Two stranded servers, two different causes, and the launcher now carries
+    the fix.** The 2026-08-17 rule — start servers as tracked tasks, stop them
+    through the tool that started them, never `pkill` — turned out to have a gap
+    at each end, and this walk found both. At the launch end, a server
+    backgrounded inside a foreground command is owned by nothing, so the stop
+    tool cannot reach it and only the banned tools remain: the shortcut at
+    launch is what forces the forbidden exit. At the stop end, the rule was
+    followed exactly and still left a process running, because stopping the task
+    reaches the wrapper and not the worker Next renames to `next-server`.
+    Servers are now launched wrapped so the whole process group dies with the
+    task (`set -m` plus a `trap`, verified twice, leaking nothing), and a
+    survivor is stopped by PID after its start time, working directory, and
+    namespace have been matched to a server this session started. Pattern
+    killing stays banned, and would have missed the renamed worker anyway —
+    which is how the 2026-08-17 incident ended up serving an unstyled page from
+    memory. Owner decision of 2026-08-20 in `specs/mission.md`, procedure in the
+    new `.claude/skills/local-server`, and both strays from the walk cleared on
+    the owner's instruction.
   - **The offline-build recipe stranded a server, and now does not.** Scripting
     A9 means backgrounding `npm start` inside `unshare -rn`, and doing that from
     a foreground command orphans it into a namespace nothing can reach and no
