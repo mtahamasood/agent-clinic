@@ -38,9 +38,16 @@ src/
 prisma/
   schema.prisma
   seed.ts
+scripts/          # the executables behind the gates below; no dependencies
 specs/            # this constitution, plus per-feature specs
 tests/            # Playwright specs; unit tests sit next to their source
+.claude/skills/   # procedure agents follow — never rules (see Changelog)
 ```
+
+`scripts/` and `.claude/skills/` are on this map because a directory that
+enforces something has to be findable. `scripts/` held a CI-binding gate for
+three days without appearing here, which is how a reader concludes the gates are
+imaginary.
 
 **Naming.** Clinic vocabulary everywhere — tables, types, routes, variables.
 `Ailment`, not `Tag`. `Appointment`, not `Booking`. The domain language from
@@ -166,7 +173,11 @@ how a changelog stops being read.
   mid-branch, where the changelog is legitimately not written yet; a gate that
   cries wolf during normal work gets routed around.
 
-**Skills carry procedure, never rules.** `.claude/skills/` is admitted as an
+**Skills carry procedure, never rules.** They live in `.claude/skills/<name>/SKILL.md`,
+committed to the repository so they travel with a clone. The leading dot is not a
+preference — it is the path the coding agent searches, so a tidier top-level
+`skills/` would simply never load. The directory is therefore listed in the
+layout map above rather than moved. `.claude/skills/` is admitted as an
 agent-facing surface for this and for what follows it, on one condition: it holds
 *how*, and `specs/` holds *what* and *why*. A skill that starts asserting the
 product or the process must be some way has become an unattributed requirement on

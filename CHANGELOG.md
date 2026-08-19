@@ -21,6 +21,14 @@ Dates are the date the work landed on `main`.
     they carry **procedure**, never rules. The 2026-08-17 ban on `AGENTS.md` and
     `CLAUDE.md` is otherwise untouched — `specs/` remains the only place a
     project rule may live.
+  - **The directory maps were wrong and are now correct.** Neither
+    `specs/tech-stack.md` nor `README.md` listed `scripts/`, which had held a
+    CI-binding gate since 2026-08-16 — an enforcement directory invisible on the
+    map for three days is how a reader concludes the gates are imaginary. Both
+    maps now carry `scripts/` and `.claude/skills/`.
+  - `README.md` claimed `npm run check` ran "typecheck, lint, format check, and
+    unit tests". It has also run `check:provenance` since 2026-08-16. Corrected,
+    and both gate commands added to the command table.
 - **Responsive design became a sourced, executable requirement** (#9). It had
   been asserted in three places and measured in none.
   - The requirement now rests on a dated owner decision rather than an
