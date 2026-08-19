@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { compareNames } from "@/lib/name-order";
 import {
   Card,
   CardContent,
@@ -39,10 +40,15 @@ export function AgentCard({ agent }: { agent: RosterAgent }) {
   // Presentation order, settled here rather than by widening the query. The
   // relation comes back in whatever order the database happens to hold it, and
   // a roster that reshuffles its own badges between builds is a flaky test
-  // waiting to happen. Alphabetical, not by severity: severity is Phase 3.
+  // waiting to happen. Alphabetical, not by severity — severity belongs to the
+  // case file, which is where Phase 3 put it.
+  //
+  // Through the pinned collator rather than bare `localeCompare`, which follows
+  // the machine's default locale and can therefore order two ailments
+  // differently on two machines (D8, extended 2026-08-20).
   const ailments = agent.diagnoses
     .map((diagnosis) => diagnosis.ailment)
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort((a, b) => compareNames(a.name, b.name));
 
   return (
     // `h-full` so cards sharing a grid row share a height. The grid stretches

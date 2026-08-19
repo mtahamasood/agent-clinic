@@ -141,10 +141,24 @@ the Phase 0 spec forbids a link to a route that does not exist. This is the page
 where the button will eventually be obvious, and its absence is the phase
 boundary doing its job.
 
+*Citation corrected on 2026-08-20, by this branch's own review.* The source
+line below previously read "the fields traced to the schema Phase 1's D5 and
+**D6** built". D6 is *Slot uniqueness is enforced in the database, on two axes* —
+it builds constraints, not columns, and says nothing about `intakeNotes`,
+`admittedOn`, `modelFamily`, `diagnosedOn`, or either `notes` field, which is
+most of what this decision puts on the page. Those columns were settled by the
+schema itself in Phase 1 rather than by a decision record, and that is what the
+line says now. A citation that does not say what it is cited as saying is worse
+than a missing one: it survives the reading a missing one would fail.
+
 *Source:* [roadmap.md](../roadmap.md#phase-3--agent-case-file) — the three named
-sections — with the fields traced to the schema Phase 1's D5 and D6 built, and
-the severity-variant clause to D7 in the
-[Phase 2 requirements](../2026-08-20-agent-roster/requirements.md).
+sections — with the severity clause resting on D5 in the
+[Phase 1 requirements](../2026-08-17-the-four-nouns/requirements.md), which put
+severity in the schema and its wording in `src/lib/severity.ts`, and the
+severity-variant clause on D7 in the
+[Phase 2 requirements](../2026-08-20-agent-roster/requirements.md). The
+remaining fields are the schema's own, built in Phase 1 and not the subject of a
+decision record.
 
 ### D3 — The route is statically prerendered, which on a dynamic segment takes work
 
@@ -170,6 +184,19 @@ routing layer, so the segment — and therefore the segment's own
 D4 is the thing that would be lost. Keeping the default costs one on-demand
 render per wrong URL, and buys the 404 the phase was asked for.
 
+*That paragraph was a prediction when it was written, and it is now a
+measurement.* The branch's own review caught it as the one load-bearing claim in
+this phase that was asserted rather than checked: the bundled `dynamicParams`
+reference says only that unbuilt params "will return a 404", and nothing at all
+about which not-found boundary renders — while D4 told the owner the trade was
+"measured instead of predicted". So it was built. A throwaway production build
+with `export const dynamicParams = false`, on 2026-08-20, returned **404** for
+`/agents/not-a-patient` and rendered **Next's default "This page could not be
+found"**; the clinic's own copy never appeared, and the eight real patients
+still served 200. The prediction held exactly, and the owner's acceptance of the
+200 in D4 now rests on two measurements rather than on one measurement and one
+guess.
+
 *Consequence, stated so Phase 6 does not have to rediscover it:* a patient
 admitted after the build has a case file that renders on demand while the roster
 that should link to it is still the prerendered eight. That incoherence is
@@ -192,7 +219,10 @@ bundled `generateStaticParams` and `dynamicParams` reference, which ships in
 `getAgent()` returns null → the page calls `notFound()` →
 `src/app/agents/[id]/not-found.tsx` renders the clinic saying so:
 *"No such patient. The clinic has looked twice, which is once more than it
-usually manages."* The header, the footer, and the container come from the root
+usually manages. Nobody by that name is on the books."* The third sentence was
+in the code and missing from this quotation until the branch's own review
+noticed; the shipped copy is the record, so the quotation was corrected to match
+it rather than the other way round. The header, the footer, and the container come from the root
 layout, so a wrong URL still looks like the clinic rather than like a crash.
 
 *Rationale:* the roadmap asks for "404 handling for an unknown agent, in voice",
@@ -206,8 +236,10 @@ measurement, not a fact anyone can read off the source.
 
 *Measured on 2026-08-20, against the production build, and it is the unwelcome
 answer.* `/agents/not-a-patient` returns **HTTP 200** carrying the clinic's own
-404 copy, with `x-nextjs-prerender: 1` and `x-nextjs-cache: MISS` then `HIT` —
-the not-found render is produced on demand and then cached for 300 seconds. The
+404 copy, with `x-nextjs-prerender: 1` and `x-nextjs-cache: MISS` then `HIT` — Next renders
+the not-found response for that unbuilt id on the first request and then serves
+it from its own cache for 300 seconds, which is why a header claiming a
+prerender appears on a page that did not exist at build time. The
 contrast is what makes it a finding rather than a curiosity: `/no-such-route`,
 which matches no route at all and so never reaches this segment, returns a
 correct **404** carrying Next's default *"This page could not be found"*. The
@@ -316,10 +348,18 @@ clinical order in `src/lib/severity.ts` precisely so a page would not invent one
 
 ### D7 — Appointments are split into upcoming and past, and the case file shows both
 
-Two lists under one heading: what is still to come, soonest first, and what has
-already happened, most recent first. Both are read from the same
-`agent.appointments` array; the split is a comparison against the current time
-in the component.
+Two lists under one `<h2>`, each with its own heading: **"Still to come"**,
+soonest first, and **"Already seen"**, most recent first. Both are read from the
+same `agent.appointments` array; the split is a comparison against the current
+time in the component.
+
+*The two strings are named here because they were not.* This decision first
+described the halves — "what is still to come", "what has already happened" —
+and left the words a reader sees on every case file to the implementation, while
+D9 two decisions down pins both empty states to the full stop. The branch's own
+review then found this spec quoting a heading, "Upcoming", that the product has
+never rendered. Copy that appears on screen is settled in the spec or it is
+settled in a diff.
 
 *Rationale, and the deciding half of it is Phase 6's.* The roadmap calls this
 section "appointment history", which on its own would read as *past only* — and
@@ -343,14 +383,26 @@ again while carrying the rendering-strategy change.
 and "upcoming" is not a booking affordance — it is a list with no button next to
 it.
 
-*Consequence of the prerender, stated so Phase 6 does not rediscover it:* the
-instant the split is measured against is the moment of the **build**, not the
-moment of the request (D3). An appointment therefore crosses from upcoming to
-past when the site is rebuilt rather than when its hour arrives. That is D12's
-staleness rather than a second one, and it is one more thing the rendering
-decision in Phase 6 has to settle — but it is worth naming here, because it is
-the first place in this project where prerendering changes what a page *means*
-rather than only how fresh it is.
+*Consequence of the prerender, and it is worse than the first draft of this
+paragraph admitted.* The instant the split is measured against is the moment of
+the **build**, not of the request (D3), so an appointment crosses from one
+heading to the other when the site is rebuilt rather than when its hour arrives.
+This decision originally filed that under "D12's staleness rather than a second
+one". The branch's own review rejected that framing, and it was right:
+
+- **D12 is data staleness.** A row written after the build does not appear.
+  Nothing already on the page becomes untrue; the page is only behind.
+- **This is time staleness.** An unchanged row migrates to the wrong heading. A
+  build left running past 10:00 files this morning's finished session under
+  *Still to come*, with *Scheduled* beside it. Not a page that is behind — a
+  page that is wrong, and one that gets wronger the longer the process lives.
+
+Calling it the same class is what made it acceptable, so the class is corrected
+here. The fix is still Phase 6's, because the fix is the rendering strategy and
+this phase may not pre-empt it — D5 of the
+[Phase 2 validation](../2026-08-20-agent-roster/validation.md) forbids
+`revalidate` outright, which rules out the obvious patch. What changes is that
+Phase 6 inherits an accurate description of what it is inheriting.
 
 *Source:* [roadmap.md](../roadmap.md#phase-3--agent-case-file) — "appointment
 history" — with [roadmap.md](../roadmap.md#phase-6--booking) for the requirement
@@ -382,11 +434,28 @@ at some other hour and make the seeded day boundaries wrong.
 formatters, alongside `severity.ts` and `appointment-status.ts`, both of which
 exist for the same reason: the half of a value that the schema cannot carry.
 
+*Extended on 2026-08-20, by this branch's own review, to cover collation.* The
+same argument applies one field over, and was missed. `localeCompare` with no
+argument uses the runtime's default collator, which follows `LANG`/`LC_ALL` and
+is independent of anything this project sets — so the severity tiebreak in D6
+and the roster's badge order could both put two rows in a different order on two
+machines, for a reason no reader could see. That is the exact failure this
+decision exists to prevent, committed in the same phase that wrote it.
+`src/lib/name-order.ts` now pins the collator to the same `en-GB` and both call
+sites go through it. Nothing in the seed exercises it — every name is plain
+Latin script — which is why it was worth pinning before something does.
+
 *Consequence for the tests:* Playwright asserts on seeded relationships —
 therapy names, status words, ailment names — and not on rendered date strings.
 The format itself is a unit test with a fixed `Date`, which is where a
 formatting change should fail. A suite that asserts today's date in prose is a
 suite that fails at midnight.
+
+*What that left open, also found by the review:* asserting no date at all meant
+nothing checked that a formatted date ever reached a page. The whole module
+could have returned `""` and every test would have stayed green. The suite now
+asserts the **shape** and never the day — `/Admitted \d{1,2} [A-Z][a-z]+ \d{4}/`
+— which is midnight-proof and still fails if the formatting disappears.
 
 *Source:* [tech-stack.md](../tech-stack.md#conventions) — the directory layout
 and the data-access convention — with the quality gate that the Playwright suite
@@ -458,6 +527,48 @@ primitive, the next one per phase, by spec) and D3 and D6 in the
 [Phase 2 requirements](../2026-08-20-agent-roster/requirements.md) (the
 navigation rule and the loading-state finding).
 
+### D11 — `npm run typecheck` regenerates the Prisma client, because the claim three phases have made about it was false
+
+`"typecheck": "prisma generate && next typegen && tsc --noEmit"`.
+
+*Rationale, and it is a measurement rather than a preference.* Phase 1's D9 says
+a renamed column "breaks `npm run typecheck` here and everywhere downstream,
+which is the point of the ORM". Phase 2's C4 and this phase's C5 are the checks
+that test it, and three code comments on this branch repeat the promise. The
+branch's own review doubted it, so it was tried on 2026-08-20, in a clean clone:
+
+```
+rename Agent.modelFamily  ->  npm run typecheck   PASSES, silently
+prisma generate           ->  npm run typecheck   fails at src/app/agents/[id]/page.tsx
+                                                  and at four other call sites
+```
+
+`src/generated/prisma` is gitignored and written only by `postinstall`, and
+`next typegen` does not touch it — so `tsc` was reading a client generated
+before the rename. **The derivation was right and the trigger was wrong**: the
+type inference does exactly what D9 promised, at a command nobody runs at that
+moment. CI escaped the hole by accident, because a fresh clone installs before
+it checks.
+
+*Why fix the script rather than soften the comments.* A gate that only fires
+after an unrelated command is the shape this project keeps catching — a rule
+that lives in prose, a check nobody executed, a claim that reads as rigour. The
+alternative was to reword three comments and two checks to say "after
+`prisma generate`", which documents the gap instead of closing it.
+
+*Cost accepted:* about a second on every `npm run typecheck`, including the one
+inside `npm run check`, which runs constantly mid-branch.
+
+*Boundary:* `dependencies` and `devDependencies` are untouched and
+`package-lock.json` is unchanged. Only the script changed — D3 in
+[validation.md](validation.md) said "`package.json` is unchanged" as a proxy for
+"no new dependency", and that row now says what it meant.
+
+*Source:* [tech-stack.md](../tech-stack.md#quality-gates) — "`tsc --noEmit`
+clean" as a per-phase gate, which a stale generated client silently exempts —
+with the claim being repaired coming from D9 in the
+[Phase 1 requirements](../2026-08-17-the-four-nouns/requirements.md).
+
 ## Constraints inherited
 
 From [tech-stack.md](../tech-stack.md), all still binding:
@@ -471,7 +582,9 @@ From [tech-stack.md](../tech-stack.md), all still binding:
   "booking". The section headings are what a receptionist would call them.
 - **No branch on deploy target, no runtime filesystem writes, no network after
   `npm install`.**
-- **No new dependency.** `package.json` and `package-lock.json` are unchanged.
+- **No new dependency.** `dependencies`, `devDependencies` and
+  `package-lock.json` are unchanged. One script changed, for the reason D11
+  gives; nothing was installed.
 - **No schema change.** `prisma/schema.prisma` and `prisma/migrations/` are
   byte-identical to `main`. The schema is closed until Phase 6 says otherwise.
 - **Rendering strategy unchanged.** Every route prerenders, which on this route
@@ -483,8 +596,11 @@ From [tech-stack.md](../tech-stack.md), all still binding:
 
 ## Open questions
 
-None. Both were answered by the owner on 2026-08-20, before any code was
-written.
+**One is open.** Q1 and Q2 were put to the owner on 2026-08-20 before any code
+was written, and both are answered below. Q3 was not: it is a source that turned
+out not to exist, found by this branch's own review *after* the code was
+written, and it is the one thing on this branch a reader should not take as
+settled.
 
 **Q1 — Do presenting ailments read worst first, or mildest first?** **Worst
 first, as recommended.** `SEVERE` at the top, `MILD` at the bottom, ties broken
@@ -531,6 +647,40 @@ criterion by name — not a gap this phase leaves permanently, a gap it leaves f
 one phase.
 
 No register entry: declining to add a field installs nothing.
+
+**Q3 — Where does "a page's title names the page" come from?** **Open, and
+raised on 2026-08-20 by this branch's own review rather than before the code.**
+
+This phase added `generateMetadata()` so a case file's tab reads
+*"Atlas — AgentClinic"*, and cited check C15 of the
+[Phase 2 validation](../2026-08-20-agent-roster/validation.md) as its bar. That
+citation does not hold up. C15 is a validation row, and
+[tech-stack.md](../tech-stack.md#requirement-provenance) admits exactly three
+sources — the stakeholder brief, a constitution clause, or a dated owner
+decision. A previous phase's check is none of them, and Phase 2's requirements
+and plan never mention a title or metadata at all, so the chain terminates in
+mid-air. `npm run check:provenance` cannot see it, because it lints `### Dn`
+headings and this arrived as prose.
+
+*Why it is a question and not a decision.* Every candidate source is a stretch.
+Steve's *"attractive site"* is about how the site looks; mission's *"funny is a
+feature; confusing is not"* is about copy; the naming convention in tech-stack
+is about clinic vocabulary, not about which text goes in a `<title>`. Picking
+one of those and writing it down would be the accessibility incident's exact
+move — a defensible-sounding attribution invented after the fact — and this
+project has a register for the alternative.
+
+*The recommendation is a dated owner entry saying page titles name their page*,
+covering `/agents` retroactively and every route after it. The honest
+alternative is deletion: strip `generateMetadata()` here and C15 from Phase 2,
+and every tab reads "AgentClinic". That is worse for the reader and it is
+available, which is what makes the first option a decision rather than a
+default.
+
+*Left in the code, deliberately and visibly, pending the answer.* Deleting it
+would leave `/agents` titled and `/agents/[id]` not, on the strength of a rule
+nobody has stated. Written down here so that whichever way it goes, it is not
+silent — which is the one outcome the provenance rule forbids.
 
 Ambiguity found during implementation goes to the backlog or reopens this file,
 not into the code.

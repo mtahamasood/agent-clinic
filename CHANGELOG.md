@@ -52,10 +52,36 @@ Dates are the date the work landed on `main`.
     Phase 6, which writes appointments and has to reason about those constraints
     anyway; the README's "safe to re-run" is knowingly left standing until the
     fix makes it true.
-  - **One new module, three new components, no new dependency and no new query.**
-    `src/lib/clinic-date.ts` pins the date format so a Playwright assertion does
-    not depend on the machine running it; `getAgent()` and `listAgents()` are
-    untouched, which is the second and larger test of Phase 1's D9.
+  - **Reviewed after it was walked, and the review falsified four of its own
+    checks.** Three reviewers over the branch — spec discipline, code
+    correctness, tests — found that the alphabetical tiebreak, the prose-wrap
+    measurement, the renamed-column claim and the "dates come from one place"
+    grep could none of them fail. Each was demonstrated dead by mutation rather
+    than argued: delete the tiebreak, add `whitespace-nowrap`, rename a column,
+    run the documented command. All four are rewritten, and each rewrite was
+    re-run against the same mutation to watch it go red. The stories are in the
+    rows in `specs/2026-08-20-agent-case-file/validation.md`, which carry what
+    they replaced.
+  - **`npm run typecheck` now regenerates the Prisma client (D11).** Three
+    phases have promised that renaming a column breaks the typecheck; it did
+    not, because the generated client is gitignored and written only by
+    `postinstall`, so `tsc` was reading a stale copy. The derivation was always
+    right and the trigger was wrong. Fixing the script closes the gap rather
+    than documenting it.
+  - **Name ordering is pinned to a collator (D8, extended).** The phase that
+    pinned the date locale — so that a rendered string would not depend on the
+    machine — left `localeCompare` bare in the severity tiebreak and the
+    roster's badges, where it has the same exposure. `src/lib/name-order.ts`.
+  - **A requirement with no source, raised rather than attributed.** The page
+    title traced to a validation row in a closed phase, which is not one of the
+    three sources the provenance rule admits. It is open as Q3 rather than
+    given a plausible-sounding home — which is precisely the move that produced
+    the accessibility incident this project keeps referring to.
+  - **Two new modules, two new components, no new dependency and no new query.**
+    `src/lib/clinic-date.ts` pins the date format and `src/lib/name-order.ts`
+    pins name collation, so neither a rendered string nor a rendered order
+    depends on the machine; `getAgent()` and `listAgents()` are untouched, which
+    is the second and larger test of Phase 1's D9.
 
 - **Phase 2 — the agent roster** (#14). `/agents` lists the clinic's eight patients as
   cards: name, model family, and the ailments each one presents. The first route

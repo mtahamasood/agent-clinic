@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { formatClinicDate } from "@/lib/clinic-date";
+import { compareNames } from "@/lib/name-order";
 import { compareSeverity, severityLabel } from "@/lib/severity";
 import type { Severity } from "@/generated/prisma/enums";
 import type { getAgent } from "@/server/agents";
@@ -45,16 +46,7 @@ export function DiagnosisList({
 }: {
   diagnoses: CaseFileDiagnosis[];
 }) {
-  // Sorted on a copy. The array comes straight from the query, and a component
-  // that reorders its own props in place is a bug that only shows itself once
-  // something else reads them.
-  const ordered = [...diagnoses].sort(
-    (a, b) =>
-      compareSeverity(b.severity, a.severity) ||
-      a.ailment.name.localeCompare(b.ailment.name),
-  );
-
-  if (ordered.length === 0) {
+  if (diagnoses.length === 0) {
     return (
       <p className="mt-4 text-muted-foreground">
         No diagnosis on file yet. The intake notes are all the clinic has to go
@@ -62,6 +54,20 @@ export function DiagnosisList({
       </p>
     );
   }
+
+  // `toSorted` rather than a copy-then-sort: the array comes straight from the
+  // query, and a component that reorders its own props in place is a bug that
+  // only shows itself once something else reads them.
+  //
+  // Negated rather than argument-swapped, so the reversal says so out loud. The
+  // tiebreak is not decoration: Roux presents two MODERATE diagnoses and Nim two
+  // MILD ones, and without it those pairs come out in whatever order the
+  // database happened to return.
+  const ordered = diagnoses.toSorted(
+    (a, b) =>
+      -compareSeverity(a.severity, b.severity) ||
+      compareNames(a.ailment.name, b.ailment.name),
+  );
 
   return (
     <ul className="mt-4 space-y-4">
@@ -74,7 +80,12 @@ export function DiagnosisList({
               ailment name and its severity need two lines, and taking them is
               cheaper than a horizontal scrollbar. */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h3 className="font-medium">{diagnosis.ailment.name}</h3>
+            {/* Not a heading. One heading level meaning two different things in
+                one document — an item title here, a group label over the
+                appointments — is what made a Playwright locator need a comment
+                apologising for itself. Items are items in both lists now, and
+                `<h3>` belongs to the appointment groups alone. */}
+            <p className="font-medium">{diagnosis.ailment.name}</p>
             <Badge variant={SEVERITY_VARIANT[diagnosis.severity]}>
               {severityLabel(diagnosis.severity)}
             </Badge>

@@ -99,24 +99,24 @@ Inherited by every phase from
 | C2 | The profile is complete | Name, model family, admission date, and the intake notes in full (D2) |
 | C3 | The route is prerendered | `next build` lists `/agents/[id]` as static with eight generated paths. Read from the build output, not inferred from the source (D3) |
 | C4 | No new data access | `git diff main -- src/server/` is empty. The page calls `getAgent()` and `generateStaticParams()` calls `listAgents()`, both unchanged (D1) |
-| C5 | Types are inferred | Renaming `intakeNotes` or `modelFamily` in `schema.prisma` breaks `npm run typecheck` at the page and the list components, not only at a test |
+| C5 | Types are inferred | Renaming `intakeNotes` or `modelFamily` in `schema.prisma` breaks `npm run typecheck` at the page; renaming `Ailment.name`, `Diagnosis.diagnosedOn` or `Appointment.scheduledFor` breaks it at the list components. **Measured 2026-08-20, and it did not hold as first written** — `npm run typecheck` did not regenerate the client, so the rename passed silently and this row would have been ticked on nothing. The script now runs `prisma generate` first (D11), and the rename was re-run to watch it fail |
 | C6 | The unknown patient reads in voice | `/agents/not-a-patient` renders the clinic's own 404 copy inside the root layout's header and footer, on the **production build**. **Measured 2026-08-20: HTTP 200**, with `x-nextjs-prerender: 1` and the response cached for 300s; `/no-such-route`, which never reaches this segment, returns a correct 404 with Next's default page. In voice: yes. Correct status: no — put to the owner on 2026-08-20 and accepted as measured, with the finding and the trade it sits on in D4 (D4, A9) |
 | C7 | Still a Server Component | No `"use client"` anywhere in the repo |
-| C8 | No primitive was added | `src/components/ui/` still contains `card.tsx` and `badge.tsx` and nothing else; `package.json` is unchanged (D10) |
+| C8 | No primitive was added | `src/components/ui/` still contains `card.tsx` and `badge.tsx` and nothing else, and no package was installed — see D3 for the one script that did change (D10) |
 
 ### The ailments
 
 | # | Check | Passes when |
 | --- | --- | --- |
 | C9 | Every diagnosis is on the file | A patient with three diagnoses shows three, each with its ailment name and its severity written as a word (D2) |
-| C10 | The order is the one the owner chose | The rendered order matches Q1's answer, with the alphabetical tiebreak, verified on Bodhi (three severities) and on Roux or Nim (a tie). Read off the rendered page, not off the sort function (D6) |
+| C10 | The order is the one the owner chose | The rendered order matches Q1's answer, verified on Bodhi (one diagnosis at each severity). The alphabetical tiebreak is verified on **Roux** — not Nim, and the difference is the whole check: Nim's tied pair already arrives alphabetically from the query, so with a stable sort the assertion passes with the tiebreak deleted. **Measured by deleting it 2026-08-20**: green on Nim, red on Roux. Read off the rendered page, not off the sort function (D6) |
 | C11 | The severity badge invents nothing | Only `outline`, `secondary`, and `destructive` — variants the vendored primitive already ships. No new colour, no new class, no severity scale of ours (D2's boundary) |
 
 ### The appointments
 
 | # | Check | Passes when |
 | --- | --- | --- |
-| C12 | Every appointment is on the file | Both of Atlas's appear, one under upcoming and one under past, and neither list drops a row (D7) |
+| C12 | Every appointment is on the file | Every seeded booking appears on its patient's file and no list drops a row. Checked on **Bodhi** for *Already seen* (one session, seven days back) and **Atlas's `+3`** for *Still to come*. **Corrected 2026-08-20:** this row used to say Atlas shows "one under upcoming and one under past", which is false for any build started before 10:00 — Atlas's other session is today at 10:00, so both sit under *Still to come*, as the walk's own A8 record shows. A check whose truth depends on the hour the build ran is not binary (D7) |
 | C13 | The split is real | A future booking never appears under the past heading and vice versa, and a patient with only past sessions shows no empty "Upcoming" heading (D7) |
 | C14 | Status reads in words | `Scheduled` and `Completed`, via `appointmentStatusLabel()` — not the raw enum (D2) |
 
@@ -135,17 +135,18 @@ Inherited by every phase from
 | C18 | `/` is untouched | `git diff main -- src/app/page.tsx` is empty. The home page gains no count, no link, no preview (Phase 7) |
 | C19 | No dead links | Every link in the repo resolves to a route that exists. Phase 0's D5, carried through four phases, and the first phase in which a link to `/agents/[id]` is the *correct* thing rather than the forbidden one |
 | C20 | Landmarks hold on the new route | On a case file: exactly one `<h1>`, and `banner`, `main`, `contentinfo` all supplied by the root layout, not the page |
-| C21 | Document title | A case file's title names the patient, not the bare app name. Metadata beyond that is still Phase 8 |
-| C22 | Dates come from one place | `grep -rn "toLocaleDateString\|toLocaleString\|Intl.DateTimeFormat" src/ --exclude=lib/clinic-date.ts` returns nothing. The module's own output is unit-tested against fixed instants, so a format change fails there rather than in a screenshot (D8) |
+| C21 | Document title | A case file's title names the patient and the 404's names the miss, not the bare app name — both asserted in `tests/case-file.spec.ts`. **The requirement behind this row has no source**, which the branch's review established on 2026-08-20: it was cited to Phase 2's C15, and a validation row is not one of the three admitted sources. Open as [Q3](requirements.md#open-questions); this row therefore records what the code does, and does not assert that it should |
+| C27 | Name order comes from one place | `grep -rn "\.localeCompare(" src/` returns nothing (exit 1): every comparison of two names goes through the pinned collator in `src/lib/name-order.ts`. Added 2026-08-20 — the bare form follows the machine's default locale, so the severity tiebreak and the roster's badge order could differ between two builds of the same database (D8, extended). Matches the *call* and not the word, and both halves were run before this row was written: clean on the branch, and red against a planted `a.name.localeCompare(b.name)`. Writing `--exclude` here instead is how C22 came to be ticked on a command that never passed |
+| C22 | Dates come from one place | `grep -rn "toLocaleDateString\|toLocaleString\|Intl.DateTimeFormat" src/ --exclude=clinic-date.ts` returns nothing. **Corrected 2026-08-20:** the exclude was written `--exclude=lib/clinic-date.ts`, and `--exclude` matches a glob against the *basename*, so it excluded nothing and the command returned three hits every time — published and ticked without being run once. The module's own output is unit-tested against fixed instants, and the suite now also asserts a formatted date's **shape** on the page, so a module that returned `""` would fail (D8) |
 
 ### Responsive — long prose is this route's version of the risk
 
 | # | Check | Passes when |
 | --- | --- | --- |
 | C23 | No sideways overflow | The width sweep in `tests/responsive.spec.ts` passes at 320, 480, 640, 1024, and 1536px on a case file as well as `/` and `/agents` (plan 8.7) |
-| C24 | Prose wraps | At 320px the intake notes, the clinical asides, and the appointment notes wrap inside the container rather than widening it (plan 8.8) |
+| C24 | Prose wraps | At 320px no block on a case file has `scrollWidth > clientWidth` — measured on **Bodhi**, who carries all three kinds of prose the row names. **Rewritten 2026-08-20, twice over.** It compared each block's `boundingBox()` against the container edge, which cannot fail: a `<p>` is a block box, so its border box is the container's width whatever the text inside does. Adding `whitespace-nowrap` to the intake notes was measured to leave it green, and to make it red after the rewrite. It also named "the appointment notes" while visiting Atlas, whose two bookings have none (plan 8.8) |
 | C25 | No bespoke breakpoint | Only Tailwind's default breakpoint prefixes appear, and no fixed width: `grep -rnE "\[[0-9]+px\]|min-\[|max-\[|w-\[" src/app src/components --exclude-dir=ui` returns nothing. The exclusion of the vendored primitives is Phase 2's C18, narrowed there for the reason its row gives |
-| C26 | It reads as a patient's record on a phone | **Evidence:** the production build (`npm run build && npm start`) at a 393px-wide viewport, on the case files of **Bodhi** (three diagnoses, one completed appointment) and **Atlas** (two diagnoses, one upcoming and one past) — not a screenshot, not `next dev`, and not the desktop layout narrowed by eye. **Procedure:** open both, read each top to bottom, and read the 404 at `/agents/not-a-patient` on the same build. **Passes when** the page reads as one patient's record rather than as three stacked lists: the profile identifies who this is before any list starts, a diagnosis's severity is readable without hunting for it, the upcoming and past appointments are distinguishable at a glance, and nothing is clipped or crowded against an edge. A judgement, not a measurement — recorded with who made it and when |
+| C26 | It reads as a patient's record on a phone | **Evidence:** the production build (`npm run build && npm start`) at a 393px-wide viewport, on the case files of **Bodhi** (three diagnoses at three severities, one past session and nothing to come) and **Atlas** (two diagnoses, and at least one session still to come — whether his 10:00 has moved to *Already seen* depends on the hour the build ran, which is D7's build-time split and not something the reader should have to allow for) — not a screenshot, not `next dev`, and not the desktop layout narrowed by eye. **Procedure:** open both, read each top to bottom, and read the 404 at `/agents/not-a-patient` on the same build. **Passes when** the page reads as one patient's record rather than as three stacked lists: the profile identifies who this is before any list starts, a diagnosis's severity is readable without hunting for it, the upcoming and past appointments are distinguishable at a glance, and nothing is clipped or crowded against an edge. A judgement, not a measurement — recorded with who made it and when |
 
 C26 is the human half of the roadmap's exit criterion — "every agent on the
 roster opens a **complete** case file" — and complete is not a thing a test can
@@ -165,11 +166,11 @@ going to catch.
 | --- | --- | --- |
 | D1 | No deploy-target branching | `grep -ri "process.env.VERCEL\|NODE_ENV ===" src/ prisma/` returns nothing meaningful |
 | D2 | No runtime filesystem writes | Nothing outside Prisma writes to disk at request time |
-| D3 | No new dependency | `package.json` and `package-lock.json` are unchanged (D10) |
+| D3 | No new dependency | `dependencies`, `devDependencies` and `package-lock.json` are unchanged, and nothing was installed (D10). One script changed — `typecheck` now runs `prisma generate` first, for the reason D11 gives. This row previously read "`package.json` is unchanged", which was a proxy for the thing it meant |
 | D4 | No schema change | `prisma/schema.prisma` and `prisma/migrations/` are byte-identical to `main` |
 | D5 | Rendering strategy unchanged | Every route prerenders. No `dynamic`, no `revalidate`, no `no-store`, and no `dynamicParams` export anywhere — the last of those is this phase's specific temptation and D3 says why it is refused |
 | D6 | Nothing writes | No Server Action, no form, no mutation. Booking is Phase 6 |
-| D7 | README honesty | Every command in the README was run during A1–A10 and behaved as documented |
+| D7 | README honesty | Every command in the README was run during A1–A10 and behaved as documented — **with one exception, named here rather than hidden by the walk's shape**: `npm run seed` is documented as "safe to re-run" and is not, across days. A1–A10 seeds exactly once and so cannot reach it. Knowingly left standing per the owner decision of 2026-08-20, which sends the fix to Phase 6 |
 
 ---
 
@@ -206,13 +207,18 @@ regardless of how green the tests are.
   replaced — in particular `AgentCard`'s, which says the card is deliberately
   not a link, and `src/lib/severity.ts`'s two ordering comments, which Q1 either
   corrects or confirms (plan 1.3, 7.2).
+- A check in section C was rewritten during the walk without the mutation that
+  proved it needed rewriting, or without re-running that mutation afterwards to
+  watch the new version fail. Three checks on this branch could not fail; each
+  is now demonstrated both ways, and a fourth written on the same evidence
+  standard is the only kind that should join them.
 - `strict: true` is off, or an `any` is uncommented.
 
 ---
 
 ## Merge criteria
 
-Merge when **A1–A10, B1–B8, C1–C26, and D1–D7 all pass, and no condition in E
+Merge when **A1–A10, B1–B8, C1–C27, and D1–D7 all pass, and no condition in E
 holds.**
 
 Record the result of section A in the PR description — including the machine and
@@ -225,85 +231,131 @@ branch for the owner's end-of-project review.
 
 ## Result
 
-**Walked 2026-08-20 on Linux 6.18 (WSL2), Node v22.23.2.** Sections A, B, C and
-D hold, with two checks still open at the end and both named there: C26, which is
-the owner's to sign off, and B8, which needs a pull request to exist before it
-can be reached.
+**Walked 2026-08-20 on Linux 6.18 (WSL2), Node v22.23.2, then reviewed on the
+same day.** The walk and the review are recorded separately below, because they
+found different kinds of thing and the second one falsified four rows the first
+had ticked.
 
-Section A ran in a fresh clone of this branch at
-`/tmp/.../scratchpad/clone`, in order — with A8 taken before A7, which changes
-nothing about either:
+### The walk
+
+Section A ran in a fresh clone of this branch at `/tmp/.../scratchpad/clone`, in
+order — with A8 taken before A7, which changes nothing about either:
 
 - **A2** `npm install` — clean, no prompt, no manual step.
-- **A4** `npm test` on the bare clone, before anything else — 56 tests pass and
-  no `clinic.db` exists afterwards. The twelve new ones are the date formatter,
-  the ailment list's order and tiebreak, and both empty branches.
+- **A4** `npm test` on the bare clone, before anything else — passes, and no
+  `clinic.db` exists afterwards.
 - **A5** `npm run migrate` — applied. `git diff --name-only origin/main...HEAD`
-  over `prisma/`, `package.json`, `package-lock.json`, `src/server/` and
-  `src/app/page.tsx` is **empty**, which is C4, C18, D3 and D4 in one command:
-  this phase added a route and changed no schema, no dependency, no query, and
-  no existing page.
+  over `prisma/`, `package-lock.json`, `src/server/` and `src/app/page.tsx` is
+  **empty**, which is C4, C18 and D4 in one command: this phase added a route
+  and changed no schema, no query, and no existing page.
 - **A6** `npm run seed` — 8 patients, 8 ailments, 6 therapies, 3 on today's
   calendar.
-- **A8** `npm run build && npm start` — the build lists `/agents/[id]` as `●
-  (SSG)` with eight generated paths, which is C3 and D5. The served case file
+- **A8** `npm run build && npm start` — the build lists `/agents/[id]` as
+  `● (SSG)` with eight generated paths, which is C3 and D5. The served case file
   carries `Meridian-4`, `Chronic Context Loss`, `Severe`, the intake notes, and
-  `Context Window Hygiene` under **Still to come** — profile, diagnosis and
-  appointment, all from the database.
-- **A9** `/agents/not-a-patient` — the clinic's own copy, and **HTTP 200**. The
-  finding is in C6 and D4; the owner accepted it as measured on 2026-08-20.
-- **A7** `npm run dev` — all eight patients open a file (200, with the
-  *Presenting ailments* section on each), and `/` still shows the notice board
-  and nothing else.
+  `Context Window Hygiene` under **Still to come**.
+- **A9** `/agents/not-a-patient` — the clinic's own copy, and **HTTP 200** (C6,
+  D4). Accepted by the owner as measured.
+- **A7** `npm run dev` — all eight patients open a file, and `/` still shows the
+  notice board and nothing else.
 - **A10** cold offline build in a `unshare -rn` namespace, with the absence of a
   route out confirmed first (`curl https://registry.npmjs.org` failed inside
   it). `rm -rf .next` beforehand. Built, served the case file from the database,
   and returned the same 200 on the unknown patient that the online run did.
 
-Three servers were started during the walk, all as tracked tasks wrapped so the
-process group dies with the task, and all three verified stopped with `ss` and
-`pgrep` afterwards. Nothing was stranded and nothing was pattern-killed, which
-is the 2026-08-20 owner decision working as intended one phase after the walk
-that produced it.
+Every server started during the walk was a tracked task wrapped so the process
+group dies with it, and every one was verified stopped with `ss` and `pgrep`
+afterwards. Nothing was stranded and nothing was pattern-killed.
 
-Three things the walk found are worth more than a tick:
+Two findings from the walk are worth more than a tick, and both went to the
+owner:
 
-- **The in-voice 404 returns 200, and the page that returns a correct 404 is
-  the one that reads badly.** D4 predicted the status code was a measurement
-  rather than a fact; it is, and it came back the wrong way round.
-  `/agents/not-a-patient` serves the clinic's copy with `200` and
-  `x-nextjs-prerender: 1`, cached for 300 seconds, while `/no-such-route` —
-  which never reaches this segment — returns `404` with Next's default page. Put
-  to the owner with the three options D4 lists and **accepted as measured**: the
-  roadmap asked for an unknown agent to be handled in voice, and it is. The
-  alternatives each cost more than the number is worth today, and Phase 8
-  inherits a measurement instead of a suspicion.
-- **`npm run seed` is not safe to re-run across days.** Found by re-seeding a
-  local database that had been seeded three days earlier: `P2002` on
+- **The in-voice 404 returns 200, and the page that returns a correct 404 is the
+  one that reads badly.** `/agents/not-a-patient` serves the clinic's copy with
+  `200`; `/no-such-route`, which never reaches this segment, returns `404` with
+  Next's default page. **Accepted as measured**, and Phase 8 now carries the
+  question in the roadmap.
+- **`npm run seed` is not safe to re-run across days** — `P2002` on
   `Appointment`'s `(agentId, scheduledFor)`, because today's `dayOffset: 0` slot
   for Atlas lands on the instant an earlier run wrote for `dayOffset: +3`. A
-  fresh clone never reaches it, which is why three validation walks had not —
-  the walk clones, migrates and seeds exactly once. It is a Phase 1 defect, it
-  contradicts a line in `README.md`, and the owner sent it to Phase 6 on
-  2026-08-20 rather than have it fixed on this branch: the collision is with the
-  slot-uniqueness constraints that phase has to reason about anyway. Registered
-  in [mission.md](../mission.md#owner-decisions) and added to Phase 6 in the
+  Phase 1 defect, sent to Phase 6 by the owner, registered in
+  [mission.md](../mission.md#owner-decisions) and in the
   [roadmap](../roadmap.md#phase-6--booking).
-- **The upcoming/past boundary is a build-time fact.** The route prerenders, so
-  the instant the split is measured against is the moment of the build, and an
-  appointment crosses from *Still to come* to *Already seen* when the site is
-  rebuilt rather than when its hour arrives. Written into D7. It is D12's
-  staleness rather than a new one, but it is the first place in this project
-  where prerendering changes what a page *means* rather than only how fresh it
-  is — which makes it Phase 6's problem in a more pointed way than `/` ever was.
 
-**C26 is open.** The evidence its row names — the production build at 393px, on
-Bodhi's and Atlas's files and the unknown-patient page — has to be read by a
-human, and the verdict recorded here with its author and date. The Phase 2 walk
-is the argument for not skipping it: the capture taken for that phase's
-judgement check is what found a ragged grid row no automated check would have
-caught.
+### The review, and what it falsified
 
-**B8 is open.** Pushing the branch alone produces no run — `push` has been
-scoped to `main` since #11 — so the pull request is what makes the check
-reachable.
+Three reviewers were then run over the whole branch — one on spec discipline,
+one on code correctness, one on whether the tests verify what they claim. The
+third question is the one that mattered. **Four checks could not fail, and three
+of those were demonstrated dead by mutation rather than argued:**
+
+| Check | The mutation | Before | After |
+| --- | --- | --- | --- |
+| C10, the alphabetical tiebreak | delete the tiebreak from `DiagnosisList` | green | red |
+| C24, prose wraps at 320px | `whitespace-nowrap` on the intake notes | green | red |
+| C5, a renamed column breaks typecheck | rename `Agent.modelFamily`, run `npm run typecheck` | passed | fails |
+| C22, dates come from one place | — run the documented command | 3 hits, exit 0 | exit 1 |
+
+Each row's story is in the row itself. The shapes are worth naming together,
+because they are four different ways to write a check that reads as rigour:
+
+- **A fixture that cannot discriminate.** C10 used Nim, whose tied pair already
+  arrives alphabetically, so the feature could be deleted without moving the
+  output. Roux is the only fixture in the seed that can fail.
+- **Measuring the wrong property.** C24 compared block boxes to a container
+  edge; a `<p>` is its container's width whatever its text does. `scrollWidth`
+  is what moves.
+- **A gate that fires after a command nobody runs.** C5's claim needed
+  `prisma generate` first, which `npm run typecheck` did not do — D11 fixes the
+  script rather than the sentence.
+- **A command published without being run.** C22's `--exclude` matched a
+  basename glob and excluded nothing.
+
+Two more rows were false rather than hollow. **C12** claimed Atlas shows one
+appointment in each half, which is untrue for any build started before 10:00 —
+and A8's own record above shows this build was one of them. **D3** asserted
+`package.json` was unchanged as a proxy for "no dependency was added". Both now
+say what they mean.
+
+The review also found **three claims in the spec that were not true of the
+code**: D2 cited a Phase 1 decision about slot uniqueness for a set of columns it
+never covered; D4 quoted the 404 copy without its third sentence; D7 named a
+heading, "Upcoming", that this product has never rendered — and had never pinned
+the two strings it does render, while D9 two decisions away pins both empty
+states to the full stop. D7's description of the build-time split as "D12's
+staleness" was also wrong in a way that mattered, since that framing is what made
+it acceptable: D12 is data going stale, while this is an unchanged row migrating
+to the wrong heading.
+
+**One requirement turned out to have no source at all.** The page title was cited
+to Phase 2's C15, and a validation row is not one of the three admitted sources.
+It is [Q3](requirements.md#open-questions), open, and the only thing on this
+branch a reader should not treat as settled.
+
+**One flake was pinned rather than re-run.** `the roster is one column on a phone`
+failed once, on the phone project, measuring a card's box before it was visible;
+`boundingBox()` returns null for an invisible element instead of waiting. A
+visibility wait was added, and the fix was proved not to have neutered the test
+by forcing the grid to one column and watching it fail at both widths. Two full
+suite runs green afterwards.
+
+### Where it stands
+
+- **A1–A10** — pass, as recorded above.
+- **B1–B7** — pass. `npm run check` green: typecheck (now including
+  `prisma generate`), ESLint, Prettier, provenance, **59 unit tests**.
+  `npm run test:e2e` green against the production build: **82 tests, both
+  viewports**, run twice after the last change.
+- **C1–C27** — pass **as corrected**. Four of them did not pass as originally
+  written, which is what the table above records; correcting a row and then
+  ticking it is only honest if the correction is visible, so each one carries
+  its date and what it replaced.
+- **D1–D7** — pass, with D7 carrying the README exception the owner accepted.
+- **C26** — **open.** The judgement check is the owner's to make on the evidence
+  its row names, and the row was reworded during the review so that the evidence
+  does not depend on the hour the build ran.
+- **B8** — **open.** Pushing the branch alone produces no run; the pull request
+  is what makes CI reachable.
+- **Q3** — **open**, and it is a requirement rather than a check.
+
+Phase 3 is not closed. It closes when C26 and B8 land and Q3 is answered.

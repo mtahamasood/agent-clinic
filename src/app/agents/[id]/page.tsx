@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AppointmentList } from "@/components/appointment-list";
@@ -21,6 +22,17 @@ import { getAgent, listAgents } from "@/server/agents";
  */
 
 /**
+ * One read per render, shared by the metadata and the page.
+ *
+ * Prisma calls are not deduplicated the way `fetch` is, so without this the
+ * route queries the same patient twice — sixteen queries across the build.
+ * `cache` is React's own memo for exactly this, it lives here rather than in
+ * `src/server/`, and so D1's "this phase adds no data access" still holds: the
+ * query is unchanged, and this only stops it running twice.
+ */
+const loadAgent = cache(getAgent);
+
+/**
  * Every patient gets a page at build time.
  *
  * Without this the segment renders on demand, which is a different rendering
@@ -39,15 +51,12 @@ export async function generateStaticParams() {
   return agents.map((agent) => ({ id: agent.id }));
 }
 
-// A title that names the patient, which is the bar check C15 set for `/agents`
-// in Phase 2. This reads the agent a second time; at build time, over eight
-// rows, that is cheaper than the alternative — a memoised read is a change to
-// `src/server/`, and D1 says this phase makes none.
+// A title that names the patient rather than the app (D11).
 export async function generateMetadata({
   params,
 }: PageProps<"/agents/[id]">): Promise<Metadata> {
   const { id } = await params;
-  const agent = await getAgent(id);
+  const agent = await loadAgent(id);
 
   return {
     title: agent
@@ -65,7 +74,7 @@ export default async function AgentCaseFilePage({
   // with their ailments, appointments with their therapies. If this ever needs
   // a wider `include`, that is a finding about Phase 1's D9 and belongs in a
   // spec before it belongs in this file.
-  const agent = await getAgent(id);
+  const agent = await loadAgent(id);
 
   if (!agent) {
     notFound();

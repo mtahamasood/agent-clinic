@@ -86,10 +86,11 @@ the two list components to exist but not to have settled their contents.
     top of the component, rather than calling `new Date()` inside a comparator.
 4.3 Each entry: therapy name, the slot via `formatClinicDateTime()`, the status
     via `appointmentStatusLabel()`, and `Appointment.notes` when present.
-4.4 Two sub-lists, two headings, one empty branch: when there are no
-    appointments at all, "Never been seen. Registered, diagnosed, and left in
-    the waiting room." A patient with only past appointments shows the past list
-    alone, with no empty "Upcoming" heading over nothing (D9).
+4.4 Two sub-lists, two headings — **"Still to come"** and **"Already seen"**,
+    the strings D7 names — and one empty branch: when there are no appointments
+    at all, "Never been seen. Registered, diagnosed, and left in the waiting
+    room." A patient with only past appointments shows that list alone, with no
+    empty heading over nothing (D9).
 4.5 No `<a>` and no `next/link`: `/therapies/[id]` is Phase 5, and booking is
     Phase 6.
 
@@ -170,12 +171,15 @@ rather than assumed.
     (D8).
 8.2 The severity order (D6), asserted by reading the rendered order of a patient
     with three diagnoses at three severities — Bodhi — rather than by reading
-    the sort function.
-8.3 The upcoming/past split (D7), on a patient who has one of each. Atlas has a
-    session today and another three days out; Roux and Percival have completed
-    ones. Assert that a future booking appears under the upcoming heading and a
-    completed one under the past heading, not that a particular date string
-    renders.
+    the sort function. The **tiebreak** needs a different patient: pick the one
+    whose tied pair arrives from the query in the *opposite* order to
+    alphabetical, or the assertion passes with the tiebreak deleted. That is
+    Roux, not Nim, and group 11 records how that was established.
+8.3 The upcoming/past split (D7), asserting **which half** each booking lands
+    in rather than that both headings rendered — the distinction is the finding
+    in group 11. Fixtures are moved relative to now rather than taken as seeded:
+    Atlas's own session is today at 10:00, so a test that trusted it would pass
+    all morning and start failing at ten.
 8.4 The 404: `/agents/not-a-patient` renders the in-voice message inside the
     clinic's own header and footer. Assert the copy and the landmarks; the
     status code is group 6's measurement and belongs in validation, not in an
@@ -183,8 +187,9 @@ rather than assumed.
 8.5 The landmarks on the new route: exactly one `<h1>`, and `banner` / `main` /
     `contentinfo` still supplied by the layout rather than the page.
 8.6 Unit tests for both list components' empty branches (D9), rendered with
-    `renderToStaticMarkup` against a real seeded agent with the relation
-    emptied — the fixture pattern `agent-card.test.tsx` set in Phase 2.
+    `renderToStaticMarkup` and an empty relation — the fixture pattern
+    `agent-card.test.tsx` set in Phase 2, which renders the component rather
+    than reading it.
 8.7 Extend `tests/responsive.spec.ts` to sweep `/agents/atlas` as well as `/`
     and `/agents`. The route list is one constant; a phase that adds a route and
     not its entry there is a phase whose layout is unmeasured (Phase 2's C16).
@@ -235,14 +240,46 @@ passes with a third route on the map.
 
 ---
 
-## 11. Close the phase
+## 11. Act on the branch's own review
 
-11.1 Walk [validation.md](validation.md) end to end and record the result in its
+Written after groups 1–10 were complete and the walk recorded, when three
+reviewers were run over the branch from a spec, a code, and a test perspective.
+It is a group rather than a footnote because it changed code, tests, a script,
+and five decision records.
+
+11.1 **Prove each dead check dead before rewriting it.** Three checks on this
+     branch could not fail: the alphabetical tiebreak (deleted it — suite stayed
+     green), the prose-wrap measurement (added `whitespace-nowrap` — stayed
+     green), and the severity-rename claim in C5 (renamed a column — typecheck
+     passed). Each was demonstrated by mutation, not argued.
+11.2 **Rewrite them so they fail.** Then re-run the same mutation and watch it
+     fail. A check rewritten without that second step is a check nobody has
+     tested either.
+11.3 **Fix the trigger, not the wording,** where the gate itself was hollow —
+     D11.
+11.4 **Correct the record rather than the memory of it.** Every finding lands in
+     the decision it belongs to, dated and saying what it replaced: D2's bad
+     citation, D3's unmeasured claim, D4's misquoted copy, D7's heading strings
+     and its wrong staleness class, D8's missing collation pin.
+11.5 **A requirement with no source is raised, not attributed.** The page title
+     had no source anywhere; it goes to the owner as Q3 rather than acquiring a
+     plausible one.
+11.6 Re-run every gate afterwards, including the full Playwright suite at both
+     viewports, and record it.
+
+**Ends with:** the checks that carry this phase's exit criterion actually able
+to fail.
+
+---
+
+## 12. Close the phase
+
+12.1 Walk [validation.md](validation.md) end to end and record the result in its
      Result section — the machine and Node version section A ran on, and the
      verdict, date, and author of the judgement check.
-11.2 Confirm no scope leaked: no `/ailments`, no `/therapies`, no booking
+12.2 Confirm no scope leaked: no `/ailments`, no `/therapies`, no booking
      affordance, no site-wide 404, no third primitive, no design pass.
-11.3 Open the PR. Record section A's result in the description.
-11.4 Merge, and **keep the branch** — `phase-3-agent-case-file` joins the phase
+12.3 Open the PR. Record section A's result in the description.
+12.4 Merge, and **keep the branch** — `phase-3-agent-case-file` joins the phase
      collection, per [tech-stack.md](../tech-stack.md#branch-retention). Do not
      pass `--delete-branch`.

@@ -160,6 +160,14 @@ clicking through.
 - Marketing-grade landing treatment for Steve: typography, spacing, motion where
   it earns its place.
 - Metadata, favicon, social preview.
+- **Settle the site's 404.** An unknown *agent* is handled in voice and returns
+  **HTTP 200** — measured on 2026-08-20 and accepted by the owner as the price of
+  keeping the in-voice page — while an unmatched URL anywhere else returns a
+  correct 404 carrying Next's default page. The wrong status on the page that
+  reads well, the right one on the page that does not. Both halves are a
+  whole-site question, which is this phase's, with every route in view. Full
+  measurement and the trade in D4 of the
+  [Phase 3 requirements](2026-08-20-agent-case-file/requirements.md).
 - Deploy **both** ways: self-hosted (`next build` + `next start`) against a local
   libSQL file, and Vercel against a hosted Turso database.
 - `README.md` carries verified step-by-step instructions for each path.

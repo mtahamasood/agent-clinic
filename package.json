@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit",
+    "typecheck": "prisma generate && next typegen && tsc --noEmit",
     "migrate": "prisma migrate deploy",
     "seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",

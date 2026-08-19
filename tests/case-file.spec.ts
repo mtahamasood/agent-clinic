@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 /**
  * Phase 3's happy path: a patient's whole record, reached by clicking their
@@ -10,6 +10,15 @@ import { expect, test } from "@playwright/test";
  * and unit-tested in `src/lib/clinic-date.test.ts` (D8), and a suite that
  * asserts today's date in prose is a suite that fails at midnight.
  */
+
+/** The diagnosis rows, in the order the page renders them. */
+function diagnosisEntries(page: Page) {
+  return page
+    .locator("section", {
+      has: page.getByRole("heading", { name: "Presenting ailments" }),
+    })
+    .locator("li");
+}
 
 test("the roster opens a patient's case file", async ({ page }) => {
   await page.goto("/agents");
@@ -23,12 +32,20 @@ test("the roster opens a patient's case file", async ({ page }) => {
   // one it showed (D2).
   const main = page.getByRole("main");
   await expect(main).toContainText("Meridian-4");
-  await expect(main).toContainText("Admitted");
   await expect(main).toContainText("Ships infrastructure changes");
+  // The shape of a formatted date, not the day it happens to be. Without this
+  // the whole date module could return "" and every test would still pass.
+  await expect(main).toContainText(/Admitted \d{1,2} [A-Z][a-z]+ \d{4}/);
+  await expect(main).toContainText(/Diagnosed \d{1,2} [A-Z][a-z]+ \d{4}/);
+  await expect(main).toContainText(/at \d{2}:\d{2}/);
 
-  // A diagnosis, with the severity the roster is forbidden to carry.
-  await expect(main).toContainText("Chronic Context Loss");
-  await expect(main).toContainText("Severe");
+  // A diagnosis, with the severity the roster is forbidden to carry — scoped to
+  // its own row, so the word cannot be satisfied by a clinical note elsewhere
+  // on the page that happens to contain it.
+  const chronic = diagnosisEntries(page).filter({
+    hasText: "Chronic Context Loss",
+  });
+  await expect(chronic).toContainText("Severe");
 
   // An appointment, with the therapy at the other end of it.
   await expect(main).toContainText("Context Window Hygiene");
@@ -44,20 +61,35 @@ test("the roster opens a patient's case file", async ({ page }) => {
 test("a case file lists its ailments worst first", async ({ page }) => {
   await page.goto("/agents/bodhi");
 
-  // Scoped to its own section: the appointments below carry `<h3>` headings of
-  // their own, so an unscoped level-3 query collects both lists.
-  const ailments = page
-    .locator("section", {
-      has: page.getByRole("heading", { name: "Presenting ailments" }),
-    })
-    .getByRole("heading", { level: 3 });
+  const ailments = diagnosisEntries(page);
   await expect(ailments).toHaveText([
-    "Rate-Limit Anxiety",
-    "Tool-Call Tremor",
-    "Recursive Self-Doubt",
+    /Rate-Limit Anxiety/,
+    /Tool-Call Tremor/,
+    /Recursive Self-Doubt/,
   ]);
 
-  await expect(page.getByRole("main")).toContainText("Moderate");
+  // Each severity beside the ailment it belongs to, not merely present on the
+  // page: three right words against three wrong ailments would read as correct
+  // to an unscoped assertion.
+  await expect(ailments.nth(0)).toContainText("Severe");
+  await expect(ailments.nth(1)).toContainText("Moderate");
+  await expect(ailments.nth(2)).toContainText("Mild");
+});
+
+/**
+ * The tiebreak, on the rendered page (C10). Roux presents two MODERATE
+ * diagnoses that arrive from the query in the opposite order to alphabetical,
+ * so this inverts the moment the tiebreak is removed. Nim, the other tie in the
+ * seed, arrives already alphabetical and would pass either way — which is the
+ * finding that rewrote the unit test beside it.
+ */
+test("a case file breaks a severity tie alphabetically", async ({ page }) => {
+  await page.goto("/agents/roux");
+
+  await expect(diagnosisEntries(page)).toHaveText([
+    /Hallucinatory Confidence/,
+    /Prompt Fatigue/,
+  ]);
 });
 
 /**
@@ -113,6 +145,7 @@ test("an unknown patient gets the clinic's own 404", async ({ page }) => {
   await expect(page.getByRole("main")).toContainText(
     "The clinic has looked twice",
   );
+  await expect(page).toHaveTitle(/No such patient/);
 
   // Still the clinic: the masthead, the footer, and the way back.
   await expect(page.getByRole("banner")).toBeVisible();

@@ -29,25 +29,6 @@ export function AppointmentList({
 }: {
   appointments: CaseFileAppointment[];
 }) {
-  // Taken once, rather than inside a comparator. Worth knowing what this
-  // instant actually is: the route is prerendered (D3), so it is the moment of
-  // the *build*, and an appointment crosses from upcoming to past when the site
-  // is rebuilt rather than when the hour arrives. That is D12's staleness, not
-  // a second one, and Phase 6 is where the rendering strategy that causes it
-  // gets settled.
-  const now = new Date();
-
-  // Split by the clock, not by status. They agree in the seed and they are
-  // still two different facts: a session can be over without anyone having
-  // marked it completed, and the file should say so rather than quietly file it
-  // under what is still to come.
-  const upcoming = appointments
-    .filter((appointment) => appointment.scheduledFor >= now)
-    .sort((a, b) => a.scheduledFor.getTime() - b.scheduledFor.getTime());
-  const past = appointments
-    .filter((appointment) => appointment.scheduledFor < now)
-    .sort((a, b) => b.scheduledFor.getTime() - a.scheduledFor.getTime());
-
   if (appointments.length === 0) {
     return (
       <p className="mt-4 text-muted-foreground">
@@ -55,6 +36,33 @@ export function AppointmentList({
       </p>
     );
   }
+
+  // Taken once, rather than inside a comparator. Worth knowing what this
+  // instant actually is: the route is prerendered (D3), so it is the moment of
+  // the *build*. An appointment crosses from one heading to the other when the
+  // site is rebuilt rather than when its hour arrives, which means a long-lived
+  // build eventually files this morning's finished session under "Still to
+  // come". That is a sharper failure than D12's — D12 is data going stale, and
+  // nothing already on the page becomes untrue; this is an unchanged row
+  // migrating to the wrong heading. Phase 6 owns the rendering strategy that
+  // fixes it (D7).
+  const now = new Date();
+
+  // Split by the clock, not by status. They agree in the seed and they are
+  // still two different facts: a session can be over without anyone having
+  // marked it completed, and the file should say so rather than quietly file it
+  // under what is still to come.
+  //
+  // Both halves are sorted here rather than trusted from the query. `past`
+  // happens to arrive in the right order today — `getAgent()` returns
+  // `scheduledFor` descending — and a component that leans on a caller's
+  // ordering breaks silently the day the caller changes its mind.
+  const upcoming = appointments
+    .filter((appointment) => appointment.scheduledFor >= now)
+    .sort((a, b) => a.scheduledFor.getTime() - b.scheduledFor.getTime());
+  const past = appointments
+    .filter((appointment) => appointment.scheduledFor < now)
+    .sort((a, b) => b.scheduledFor.getTime() - a.scheduledFor.getTime());
 
   return (
     <>

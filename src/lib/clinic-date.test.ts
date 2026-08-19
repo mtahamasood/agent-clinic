@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { formatClinicDate, formatClinicDateTime } from "./clinic-date";
+import {
+  CLINIC_LOCALE,
+  formatClinicDate,
+  formatClinicDateTime,
+  resolvedClinicLocale,
+} from "./clinic-date";
 
 /**
  * The formats themselves, which is where a change to them should fail.
@@ -30,9 +35,13 @@ describe("how the clinic writes a date down", () => {
   });
 
   test("the locale does not follow the machine", () => {
-    // en-GB puts the day before the month. A US-locale runner formatting this
-    // instant with no locale argument would say "June 27, 2026", so this is the
-    // assertion that fails if the pin is ever dropped.
-    expect(formatClinicDate(new Date(2026, 5, 27))).toBe("27 June 2026");
+    // Asserted on what the formatter *resolved to*, not on its output. An
+    // earlier version of this test asserted the same string as the first test
+    // above and called itself the check that fails when the pin is dropped — it
+    // is not: on a machine whose default locale already agrees, dropping the pin
+    // changes nothing. This fails wherever the pin is removed, because the
+    // resolved locale then follows the runtime instead.
+    expect(resolvedClinicLocale()).toBe(CLINIC_LOCALE);
+    expect(CLINIC_LOCALE).toBe("en-GB");
   });
 });

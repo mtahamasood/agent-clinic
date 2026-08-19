@@ -18,18 +18,33 @@
  * would render a 09:00 appointment at some other hour and put the seeded day
  * boundaries in the wrong place.
  *
+ * The limit of that, stated because it is real: it holds only while the machine
+ * that seeds and the machine that builds share a timezone. Seed at UTC+5 and
+ * build in a UTC container and every `admittedOn` — written at local midnight —
+ * renders as the previous day. The documented workflow seeds and builds in one
+ * place, so nothing fires today; it is Phase 6's to settle along with the rest
+ * of the seed's relationship to the clock.
+ *
  * Phase 3: specs/2026-08-20-agent-case-file/requirements.md.
  */
 
+/**
+ * The one locale this project formats in. Exported so a dropped pin fails a
+ * test rather than only changing what a page says — asserting the formatted
+ * string twice, as an earlier version of the test did, proves nothing on a
+ * machine whose default locale already agrees.
+ */
+export const CLINIC_LOCALE = "en-GB";
+
 /** Admission and diagnosis dates: "27 June 2026". */
-const DAY = new Intl.DateTimeFormat("en-GB", {
+const DAY = new Intl.DateTimeFormat(CLINIC_LOCALE, {
   day: "numeric",
   month: "long",
   year: "numeric",
 });
 
 /** Appointment slots: "Saturday, 27 June 2026 at 10:00". */
-const SLOT = new Intl.DateTimeFormat("en-GB", {
+const SLOT = new Intl.DateTimeFormat(CLINIC_LOCALE, {
   weekday: "long",
   day: "numeric",
   month: "long",
@@ -47,4 +62,9 @@ export function formatClinicDate(date: Date): string {
 /** A slot on the calendar, which is a day and an hour the patient has to turn up. */
 export function formatClinicDateTime(date: Date): string {
   return SLOT.format(date);
+}
+
+/** What the formatters actually resolved to, rather than what they asked for. */
+export function resolvedClinicLocale(): string {
+  return DAY.resolvedOptions().locale;
 }
