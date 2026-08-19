@@ -3,6 +3,13 @@
 Implementation order for AgentClinic. Phases are **small and vertical** — after
 Phase 0, each one ends with something you can click in a browser.
 
+On 2026-08-20 the remaining phases were compressed for an MVP push: Phases 4
+and 5 merged into one phase, Phases 6 and 7 into another, Phase 8 unchanged.
+The original numbering is kept in the merged headings so every earlier
+reference to "Phase 6" or "Phase 7" stays true. *Source:* stakeholder ask,
+2026-08-20 — all three stakeholders; registered in
+[mission.md](mission.md#owner-decisions).
+
 ## How a phase works
 
 - **One phase at a time.** No starting the next before the current one meets its
@@ -92,31 +99,36 @@ evidence, its procedure, and its pass condition, per
 
 ---
 
-## Phase 4 — Ailment directory
+## Phase 4+5 — Ailment directory & therapy catalog
+
+Two read-only halves of one cross-link — an ailment page lists the therapies
+that treat it, a therapy page lists the ailments it treats — built together so
+neither half ships a link to a page that does not exist yet. Merged from two
+phases on 2026-08-20; source and reasoning in the MVP compression entry in
+[mission.md](mission.md#owner-decisions).
 
 - `/ailments` and `/ailments/[id]`.
 - Each ailment: deadpan clinical description, symptoms, which agents present
   with it, which therapies treat it.
-- Cross-links wired both ways with Phase 3.
-
-**Exit:** you can navigate agent → ailment → other affected agents.
-
----
-
-## Phase 5 — Therapy catalog
-
 - `/therapies` and `/therapies/[id]`.
 - Each therapy: what it involves, duration, which ailments it treats.
 - Filter the catalog by ailment.
+- Cross-links wired both ways with Phase 3, and both ways between the two
+  halves of this phase.
 
-**Exit:** an agent with a known ailment can find every therapy that treats it.
+**Exit:** you can navigate agent → ailment → other affected agents, and an
+agent with a known ailment can find every therapy that treats it.
 
 ---
 
-## Phase 6 — Booking
+## Phase 6+7 — Booking & clinic dashboard
 
-The flow that makes this an app rather than a brochure. Gets its own feature
-spec before implementation.
+The flow that makes this an app rather than a brochure, and the dashboard that
+summarises it — Mary's ask. Gets its own feature spec before implementation,
+now covering both halves. Merged from two phases on 2026-08-20 (same register
+entry as Phase 4+5): both halves sit on the rendering-strategy decision D12
+assigns to them jointly, and the dashboard is the read side of the very rows
+booking writes, so one production-build verification covers both.
 
 - From a therapy page: pick an agent, pick an available slot, confirm.
 - Server Action writes the `Appointment`; validation prevents double-booking the
@@ -132,26 +144,17 @@ spec before implementation.
   so a page that reads written data serves stale HTML until the next build —
   verified in Phase 1, recorded as
   [D12](2026-08-17-the-four-nouns/requirements.md#d12--the-home-page-stays-statically-prerendered-and-phase-6-is-told-why).
-  This phase and Phase 7 are where that stops being correct.
-
-**Exit:** Playwright books an appointment end to end and finds it on the case
-file; conflicting and past-dated bookings are refused with clear messages. The
-same flow is verified against a **production build running locally**, since this
-is the first phase that writes to the database.
-
----
-
-## Phase 7 — Clinic dashboard
-
-Mary's ask, deliberately last — it summarises everything the earlier phases
-made real.
-
+  This phase — the booking half and the dashboard half alike — is where that
+  stops being correct.
 - `/` becomes the dashboard: today's appointments, recent intakes, headline
   counts, most common ailments.
 - Quick links into the roster, catalog, and booking.
 
-**Exit:** the dashboard answers "what's happening at the clinic today?" without
-clicking through.
+**Exit:** Playwright books an appointment end to end and finds it on the case
+file; conflicting and past-dated bookings are refused with clear messages; and
+the dashboard answers "what's happening at the clinic today?" without clicking
+through. The same flows are verified against a **production build running
+locally**, since this is the first phase that writes to the database.
 
 ---
 

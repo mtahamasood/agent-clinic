@@ -13,6 +13,20 @@ Dates are the date the work landed on `main`.
 
 ## 2026-08-20
 
+- **The roadmap compresses for an MVP push.** All three stakeholders asked for
+  an MVP quickly — commercial signals indicate urgency to go to market — so the
+  five remaining phases become three. Phases 4 and 5 merge: two read-only
+  halves of one cross-link, over queries the data layer has carried since
+  Phase 1. Phases 6 and 7 merge: booking and the dashboard share the
+  rendering-strategy decision D12 assigns to both, and one production-build
+  verification covers the write path and its read side together. Phase 8
+  stands alone, since a whole-site 404 settlement and a dual-target deploy
+  cannot verify a site that is not finished. The original numbering survives
+  in the merged headings (`Phase 4+5`, `Phase 6+7`) so earlier references stay
+  true, and the merged phases inherit every quality gate, the mandated booking
+  feature spec, and the parked seed fix — fewer phases, not lower bars.
+  Registered as a dated stakeholder-ask entry in mission.md's register.
+
 - **Phase 3 — the agent case file.** `/agents/[id]` opens one patient's record:
   profile and intake notes, every diagnosis with its severity, and the
   appointments they have had and have coming. The roster's cards link through by
