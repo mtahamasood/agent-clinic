@@ -18,8 +18,10 @@ import { expect, test } from "@playwright/test";
  */
 
 // Every route the site has. A new phase adds its route here; a phase that
-// forgets is a phase whose layout is unmeasured.
-const ROUTES = ["/", "/agents"];
+// forgets is a phase whose layout is unmeasured. The case file is a seeded id
+// rather than a placeholder — `atlas` is hand-written in prisma/seed-data.ts
+// precisely so it can be named in a URL.
+const ROUTES = ["/", "/agents", "/agents/atlas"];
 
 // 320px is the narrowest viewport the convention supports; 1536px is a wide
 // desktop. The middle values sit either side of Tailwind's `sm` and `lg`
@@ -189,6 +191,39 @@ test("no roster card outgrows its container at 320px", async ({ page }) => {
     expect(
       box!.x + box!.width,
       `roster card ${i} reaches ${box!.x + box!.width}px in a container that ends at ${limit}px`,
+    ).toBeLessThanOrEqual(limit);
+  }
+});
+
+/**
+ * The case file's version of the risk the badge row was on the roster (C24).
+ *
+ * A card grid breaks by being too wide; a record page breaks by refusing to
+ * wrap — an intake note or a clinical aside that renders as one long line
+ * pushes the container out from the inside. The document-level sweep above
+ * catches that only once it reaches the viewport, so this measures the
+ * paragraphs themselves.
+ */
+test("the case file's prose wraps inside the container at 320px", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.goto("/agents/atlas");
+
+  const main = await page.getByRole("main").boundingBox();
+  expect(main).not.toBeNull();
+  const limit = main!.x + main!.width - 24; // `px-6` gutter
+
+  const blocks = page.getByRole("main").locator("p, li, h1, h2, h3");
+  const count = await blocks.count();
+  expect(count).toBeGreaterThan(5);
+
+  for (let i = 0; i < count; i++) {
+    const box = await blocks.nth(i).boundingBox();
+    if (!box) continue; // an element with no box renders nothing to overflow
+    expect(
+      box.x + box.width,
+      `block ${i} on the case file reaches ${box.x + box.width}px in a container that ends at ${limit}px`,
     ).toBeLessThanOrEqual(limit);
   }
 });

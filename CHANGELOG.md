@@ -13,6 +13,42 @@ Dates are the date the work landed on `main`.
 
 ## 2026-08-20
 
+- **Phase 3 — the agent case file.** `/agents/[id]` opens one patient's record:
+  profile and intake notes, every diagnosis with its severity, and the
+  appointments they have had and have coming. The roster's cards link through by
+  the patient's name, which is the first link between two pages of our own and
+  the first time Phase 0's no-dead-links rule points *towards* a route rather
+  than away from one.
+  - **Two owner answers, taken before code was written.** Ailments read **worst
+    first**, which reverses what `src/lib/severity.ts` had asserted in two doc
+    comments since Phase 1 — a written source is not something an implementation
+    overrules by itself, so it went to the owner and the comments were corrected
+    with the sort. And an ailment entry carries **no summary**: the sentence is
+    the same for every patient who presents with that condition, and the
+    clinical aside beside it is about this one.
+  - **The in-voice 404 returns HTTP 200, which was measured rather than
+    assumed.** Next serves a not-found response as 200 when it streams; the
+    walk found `/agents/not-a-patient` returning 200 with the clinic's own copy
+    and `/no-such-route` returning a correct 404 with Next's default page — the
+    wrong status on the page that reads well, the right one on the page that
+    does not. Recorded in D4 with the trade it sits on rather than worked
+    around: the only in-scope lever is `dynamicParams = false`, which buys the
+    status code by losing the in-voice page.
+  - **The case file shows what is still to come, not only history.** The roadmap
+    says "appointment history", and Phase 6's exit criterion is that a newly
+    booked appointment appears here — which is in the future. Split into two
+    lists, because a single one ordered by date puts next week above last month
+    and reads as a history that starts on Thursday.
+  - **Keeping the route prerendered was work, not an inheritance.** A dynamic
+    segment renders on demand unless `generateStaticParams()` says otherwise, so
+    without it this phase would have quietly changed the rendering strategy that
+    Phase 6 owns. The build now lists eight generated paths, and the walk reads
+    that line rather than trusting the source.
+  - **One new module, three new components, no new dependency and no new query.**
+    `src/lib/clinic-date.ts` pins the date format so a Playwright assertion does
+    not depend on the machine running it; `getAgent()` and `listAgents()` are
+    untouched, which is the second and larger test of Phase 1's D9.
+
 - **Phase 2 — the agent roster** (#14). `/agents` lists the clinic's eight patients as
   cards: name, model family, and the ailments each one presents. The first route
   beyond `/`, the first list rendered from a relation, and the first layout in

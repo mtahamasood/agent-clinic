@@ -202,12 +202,28 @@ component, no error boundary of our own, no new dependency.
 *The part that is not assumed.* Next's reference says a `not-found.js` response
 carries **"a `200` HTTP status code for streamed responses, and `404` for
 non-streamed responses"**. So the status code this route actually returns is a
-measurement, not a fact anyone can read off the source. The validation walk
-takes it and records what it saw (C6). If it comes back 200, that is a finding
-about the framework's behaviour on this route, recorded in this file the way
-Phase 2 recorded the loading state — **not** a reason to reach for a workaround
-in the product, and **not** something to leave ticked on the strength of the
-copy rendering.
+measurement, not a fact anyone can read off the source.
+
+*Measured on 2026-08-20, against the production build, and it is the unwelcome
+answer.* `/agents/not-a-patient` returns **HTTP 200** carrying the clinic's own
+404 copy, with `x-nextjs-prerender: 1` and `x-nextjs-cache: MISS` then `HIT` —
+the not-found render is produced on demand and then cached for 300 seconds. The
+contrast is what makes it a finding rather than a curiosity: `/no-such-route`,
+which matches no route at all and so never reaches this segment, returns a
+correct **404** carrying Next's default *"This page could not be found"*. The
+site currently returns the wrong status for the page that reads well and the
+right status for the page that does not.
+
+*It is recorded rather than worked around, and the reason is the trade in D3.*
+The only in-scope lever is `dynamicParams = false`, which returns a real 404 and
+loses the in-voice page — the exact exchange D3 refused, now measured instead of
+predicted. Getting both means an in-voice **root** not-found, which is the
+whole-site question this decision defers to Phase 8, and which would answer
+`/no-such-route` and an unknown patient with the same sentence. Nothing here
+justifies a redirect, a route handler, or a middleware hop to manufacture a
+status code. The roadmap asked for an unknown agent to be handled in voice, and
+it is; the status code is a fact about the framework that Phase 8 inherits with
+the rest of the 404 question.
 
 *Rejected: a root `not-found.tsx` covering every unmatched URL.* It is four
 lines and it is a whole-site question — what the clinic says when you ask for a
@@ -320,6 +336,15 @@ again while carrying the rendering-strategy change.
 *Boundary:* the split is a read. Nothing here writes, reschedules, or cancels,
 and "upcoming" is not a booking affordance — it is a list with no button next to
 it.
+
+*Consequence of the prerender, stated so Phase 6 does not rediscover it:* the
+instant the split is measured against is the moment of the **build**, not the
+moment of the request (D3). An appointment therefore crosses from upcoming to
+past when the site is rebuilt rather than when its hour arrives. That is D12's
+staleness rather than a second one, and it is one more thing the rendering
+decision in Phase 6 has to settle — but it is worth naming here, because it is
+the first place in this project where prerendering changes what a page *means*
+rather than only how fresh it is.
 
 *Source:* [roadmap.md](../roadmap.md#phase-3--agent-case-file) — "appointment
 history" — with [roadmap.md](../roadmap.md#phase-6--booking) for the requirement

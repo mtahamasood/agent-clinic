@@ -9,10 +9,11 @@ This is a spec-driven codebase: every feature traces back to a document in
 [`specs/`](specs/). Start with [the mission](specs/mission.md), then
 [the stack](specs/tech-stack.md) and [the roadmap](specs/roadmap.md).
 
-> **Status:** Phase 2 — the agent roster. `/agents` lists the clinic's eight
-> patients as cards: name, model family, and the ailments each one presents.
-> Case files — one page per patient, with severities and appointment history —
-> are Phase 3.
+> **Status:** Phase 3 — case files. `/agents` lists the clinic's eight patients
+> as cards, and each name opens that patient's record: intake notes, every
+> diagnosis with its severity, and the appointments they have had and have
+> coming. The ailment directory — what each condition is, and who else presents
+> with it — is Phase 4.
 
 ## Requirements
 

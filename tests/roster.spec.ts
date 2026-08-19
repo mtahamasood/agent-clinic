@@ -50,16 +50,37 @@ test("the roster carries no severities and no intake notes", async ({
 });
 
 /**
- * Nothing on this page links yet: /agents/[id] is Phase 3, /ailments is Phase 4.
- * The rule is Phase 0's D5 — no link to a route that does not exist — and this
- * is the first phase with enough routes for it to be worth measuring rather
- * than reading.
+ * The cards link through, and nothing else on the page does.
+ *
+ * This assertion said "no links at all" for one phase, which was correct while
+ * `/agents/[id]` did not exist. Phase 3 built it, so the rule it enforces —
+ * Phase 0's D5, no link to a route that does not exist — now points the other
+ * way for cards and still points the same way for badges: `/ailments/[id]` is
+ * Phase 4. Rewritten rather than deleted, because deleting it would drop the
+ * half that is still live.
  */
-test("no card and no badge links anywhere", async ({ page }) => {
+test("each card links to its patient's file, and the badges link nowhere", async ({
+  page,
+}) => {
   await page.goto("/agents");
 
+  // One link per patient, and no more: eight cards, eight links (D5).
   const links = page.getByRole("main").getByRole("link");
-  await expect(links).toHaveCount(0);
+  await expect(links).toHaveCount(8);
+
+  const atlas = page
+    .locator("li", { has: page.getByText("Atlas", { exact: true }) })
+    .first();
+  await expect(atlas.getByRole("link", { name: "Atlas" })).toHaveAttribute(
+    "href",
+    "/agents/atlas",
+  );
+
+  // The badges are still text. A link inside one would point at a route Phase 4
+  // has not built.
+  await expect(
+    page.getByRole("main").locator("[data-slot='badge'] a"),
+  ).toHaveCount(0);
 });
 
 /**

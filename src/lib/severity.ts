@@ -13,7 +13,11 @@ import { Severity } from "@/generated/prisma/enums";
  * whichever list forgot to use `compareSeverity`.
  */
 
-/// Mildest first. Reverse it for a triage list; a case file reads better this way.
+/// Mildest first: the vocabulary in clinical order, which is not the same thing
+/// as a display order. The case file reads worst first and reverses this at the
+/// call site — owner decision, 2026-08-20 (Q1 in
+/// specs/2026-08-20-agent-case-file/requirements.md), taken because this comment
+/// asserted the opposite from Phase 1 until a page existed to read.
 export const SEVERITIES_BY_CLINICAL_ORDER = [
   Severity.MILD,
   Severity.MODERATE,
@@ -37,7 +41,7 @@ export function severityLabel(severity: Severity): string {
   return LABELS[severity];
 }
 
-/** Negative when `a` is the milder of the two. Sorts a case file worst-last. */
+/** Negative when `a` is the milder of the two. The case file reverses it. */
 export function compareSeverity(a: Severity, b: Severity): number {
   return RANK[a] - RANK[b];
 }

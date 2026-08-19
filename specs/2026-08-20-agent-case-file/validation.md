@@ -100,7 +100,7 @@ Inherited by every phase from
 | C3 | The route is prerendered | `next build` lists `/agents/[id]` as static with eight generated paths. Read from the build output, not inferred from the source (D3) |
 | C4 | No new data access | `git diff main -- src/server/` is empty. The page calls `getAgent()` and `generateStaticParams()` calls `listAgents()`, both unchanged (D1) |
 | C5 | Types are inferred | Renaming `intakeNotes` or `modelFamily` in `schema.prisma` breaks `npm run typecheck` at the page and the list components, not only at a test |
-| C6 | The unknown patient reads in voice | `/agents/not-a-patient` renders the clinic's own 404 copy inside the root layout's header and footer, on the **production build**. The HTTP status is recorded here as measured — not asserted, and not left blank (D4, A9) |
+| C6 | The unknown patient reads in voice | `/agents/not-a-patient` renders the clinic's own 404 copy inside the root layout's header and footer, on the **production build**. **Measured 2026-08-20: HTTP 200**, with `x-nextjs-prerender: 1` and the response cached for 300s; `/no-such-route`, which never reaches this segment, returns a correct 404 with Next's default page. In voice: yes. Correct status: no, and the full finding with the trade it sits on is in D4 (D4, A9) |
 | C7 | Still a Server Component | No `"use client"` anywhere in the repo |
 | C8 | No primitive was added | `src/components/ui/` still contains `card.tsx` and `badge.tsx` and nothing else; `package.json` is unchanged (D10) |
 
