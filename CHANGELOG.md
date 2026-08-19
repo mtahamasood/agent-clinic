@@ -59,6 +59,18 @@ Dates are the date the work landed on `main`.
     was already here for `Card`.
   - Vitest now collects `.tsx` tests, so the card's undiagnosed branch — the one
     the seed can never reach — is rendered rather than eyeballed.
+  - **The offline-build recipe stranded a server, and now does not.** Scripting
+    A9 means backgrounding `npm start` inside `unshare -rn`, and doing that from
+    a foreground command orphans it into a namespace nothing can reach and no
+    tracked task owns — leaving `kill` and `pkill`, the two things the
+    2026-08-17 owner decision forbids, as the only way out. The break is at the
+    *start* half of that decision rather than the stop half, which is the half
+    that is easy to read past. The check now carries two forms: foreground for a
+    human at a terminal, and the whole `unshare` as one tracked task for
+    anything automated, so a single handle owns the namespace and everything in
+    it. Both were run before being written down. The stranded process from the
+    original mistake was left alive and raised with the owner rather than
+    pattern-killed.
 
 ## 2026-08-19
 

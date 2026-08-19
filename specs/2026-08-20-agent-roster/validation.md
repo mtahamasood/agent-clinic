@@ -36,14 +36,56 @@ without disturbing every other spec. It is a manual step, run once, recorded
 below.
 
 Reproduce A9 without touching your wifi, on Linux, in a network namespace with
-nothing but loopback:
+nothing but loopback. Confirm the namespace is genuinely offline **first** —
+`curl https://registry.npmjs.org` inside it must fail — or the check passes for
+the wrong reason. `rm -rf .next` matters too: a warm build directory can hide a
+fetch that only a cold build makes.
+
+**By hand, at a terminal.** The server runs in the foreground and Ctrl-C ends
+it:
 
 ```sh
 unshare -rn bash -c 'ip link set lo up; rm -rf .next; npm run build && npm start'
 ```
 
-Confirm the namespace is genuinely offline first — `curl https://registry.npmjs.org`
-inside it must fail — or the check passes for the wrong reason.
+**Scripted, or run by an agent.** The server and the `curl` both have to live
+inside the namespace — a namespace with only loopback is unreachable from
+outside — so the server has to be backgrounded in there, and a backgrounded
+server needs an owner. Make the **whole `unshare` invocation** the tracked
+background task, so one handle owns the namespace and everything in it:
+
+```sh
+# started as a tracked background task, and stopped through the tool that
+# started it — never with kill or pkill (owner decision, 2026-08-17)
+unshare -rn bash -c '
+  ip link set lo up
+  rm -rf .next
+  npm run build || exit 1
+  PORT=3100 npm start > offline-start.log 2>&1 &
+  until grep -q Ready offline-start.log; do sleep 1; done
+  grep -E "Local:|Ready" offline-start.log        # the port it actually bound
+  curl -s http://localhost:3100/agents | grep -q "Chronic Context Loss" \
+    && echo "roster served from the database, offline"
+  wait
+'
+```
+
+Do not make that last line a card count. Counting `data-slot="card"` in the
+served HTML returns twelve, not eight: four of them are the loading fallback,
+which Next embeds in the flight payload even for a prerendered route it will
+never show it on. Assert on content the database put there instead. That count
+is also the incidental proof behind the C10 finding — the fallback ships; it
+just never renders.
+
+**What not to do, because it is the obvious thing and it strands a server.**
+Backgrounding `npm start` inside a *foreground* `unshare` gives the harness no
+handle on anything: the outer shell exits, the server is orphaned into a
+namespace nothing can reach, and the only tools left to stop it are the two the
+2026-08-17 owner decision forbids. It happened during this phase's walk — the
+process is named in the Result section below. The rule's first clause is the
+load-bearing one: a server started outside the tracked-task mechanism cannot be
+stopped by it, so the shortcut at launch is what creates the situation where the
+only exit is the banned one.
 
 ---
 
@@ -232,13 +274,24 @@ than a tick:
   numbers of ailments came out ragged. One `h-full`. It is a layout defect
   rather than a treatment question, which is why it was fixed here and not left
   for Phase 8.
-- **The A9 recipe detaches a server if you script it.** Running `npm start`
-  inside `unshare -rn` with a `&` leaves a `next-server` in a network namespace
-  nothing can reach and no tracked task owns — which is the exact shape of the
-  incident behind the 2026-08-17 owner decision on `kill`. It was left running
-  and raised with the owner rather than pattern-killed. Anyone repeating A9
-  should keep the server in the foreground, as the recipe in section A above
-  writes it.
+- **The A9 recipe detached a server, and the recipe has been rewritten.**
+  Running `npm start` inside a foreground `unshare -rn` with a `&` left a
+  `next-server` — pid 26111, in namespace `4026532232` — that nothing can reach
+  and no tracked task owns, which is the exact shape of the incident behind the
+  2026-08-17 owner decision on `kill`. It was left running and raised with the
+  owner rather than pattern-killed. The break was at the *start* half of that
+  decision, not the stop half: three servers started as tracked tasks during
+  this walk were stopped cleanly through the tool that started them, and this
+  one was never tracked, so `TaskStop` could not reach it and the only remaining
+  tools were the forbidden ones. Section A now carries two forms of the recipe —
+  foreground for a human, and the whole `unshare` as one tracked task for
+  anything scripted — so the next phase inherits a version that does not strand
+  a server when it is automated. The scripted form was then **run**, twice, on
+  2026-08-20: it built cold and offline, reported the port it bound, served
+  `Chronic Context Loss` from the database, and left nothing behind after
+  `TaskStop` — the only `next-server` still on the machine afterwards was pid
+  26111 from the original mistake. Documented because it was run, which is the
+  same standard section A holds every other command to.
 
 **Still open, and neither is the implementer's to close:**
 
