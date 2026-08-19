@@ -13,16 +13,21 @@ Dates are the date the work landed on `main`.
 
 ## 2026-08-19
 
-- **CI jobs time out after ten minutes.** GitHub's default is six hours, which
-  is why a stuck build looked like a busy one: the post-merge run of #12 — three
-  Markdown files, no code — sat nine minutes on `playwright install
-  --with-deps`, a step that had taken about 70s in each of the three runs before
-  it, on a commit whose pull-request build was already green. The download
-  stalled; nothing in that path carries a client-side timeout, so the run would
-  have held a required check open until the afternoon. Ten minutes is roughly
-  twice the slowest honest run on record, and the cap sits on the job rather
-  than the step that hung, because the next one to hang will be a different
-  step.
+- **CI stops hanging on `apt-get`, and can no longer hang for six hours.** The
+  post-merge build of #12 — three Markdown files, no code — hung on
+  `playwright install --with-deps` twice, on two different runners, against a
+  commit whose pull-request build was already green and a step that had taken
+  about 70s in each of the three runs before it. The logs put the stall in the
+  `apt-get update` that `--with-deps` runs *before* fetching any browser: the
+  runner's Azure-local Ubuntu mirror went unreachable, apt fell back to the
+  public archive, opened three transfers and never received the rest — 38
+  seconds of output followed by thirteen minutes of silence. Two changes follow.
+  The flag is gone, since the runner image already ships the browser libraries
+  and the flag added the only step touching Ubuntu's mirrors. And `verify` now
+  carries `timeout-minutes: 10` against GitHub's six-hour default — roughly
+  twice the slowest honest run on record — so the next thing to stall fails
+  while anyone still cares. The cap sits on the job, not the step that hung,
+  because the next one will be a different step.
 - **Phase branches are kept; process branches are not** (#12). `phase-0-walking-skeleton`
   and `phase-1-four-nouns` stay on GitHub as end-of-phase checkouts for the
   owner's end-of-project review, and every later `phase-N-*` branch joins them.
