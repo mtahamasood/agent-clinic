@@ -9,11 +9,10 @@ This is a spec-driven codebase: every feature traces back to a document in
 [`specs/`](specs/). Start with [the mission](specs/mission.md), then
 [the stack](specs/tech-stack.md) and [the roadmap](specs/roadmap.md).
 
-> **Status:** Phase 1 — the four nouns. Agents, ailments, therapies, and
-> appointments exist in the schema and in the seed; `npm run seed` populates a
-> clinic with eight patients on the books. The pages that show them off start
-> arriving in Phase 2 — for now the home page reads a single ailment from the
-> database.
+> **Status:** Phase 2 — the agent roster. `/agents` lists the clinic's eight
+> patients as cards: name, model family, and the ailments each one presents.
+> Case files — one page per patient, with severities and appointment history —
+> are Phase 3.
 
 ## Requirements
 
@@ -26,7 +25,7 @@ account anywhere.
 npm install         # the only step that needs the network
 cp .env.example .env
 npm run migrate     # creates clinic.db
-npm run seed        # pins one notice to the board
+npm run seed        # admits eight patients and fills the calendar
 npm run dev         # http://localhost:3000
 ```
 

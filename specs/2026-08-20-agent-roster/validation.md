@@ -1,0 +1,253 @@
+# Validation — Agent roster
+
+How we know **Phase 2** is done. Every check below is binary. A phase is done or
+it isn't — no "mostly".
+
+Scope is in [requirements.md](requirements.md); the work is in
+[plan.md](plan.md).
+
+---
+
+## A. The clean-clone run
+
+Same discipline as Phases 0 and 1, and still the check most easily faked by a
+warm working directory. Run it in a **fresh clone in a new directory**.
+
+| # | Step | Passes when |
+| --- | --- | --- |
+| A1 | `git clone <repo> && cd` into it | — |
+| A2 | `npm install` | Completes with no manual step and no post-install prompt |
+| A3 | Copy `.env.example` to `.env` | Unchanged since Phase 0 — `DATABASE_URL` and nothing else for local |
+| A4 | `npm test` before anything else | Passes on a bare clone. The suite still provisions `clinic.test.db` and still leaves `clinic.db` uncreated |
+| A5 | `npm run migrate` | Applies cleanly. **No new migration this phase** — `prisma/migrations/` is byte-identical to `main` |
+| A6 | `npm run seed` | Populates the full clinic and reports its in-voice summary |
+| A7 | `npm run dev` | `/agents` lists eight patients; `/` is unchanged from Phase 1 apart from the header link (C11) |
+| A8 | Stop dev; `npm run build && npm start` | The **same** roster, same content, from the production build |
+| A9 | Disconnect the network, repeat A8 | Still works. Install remains the only step that touches the registry |
+| A10 | With the agents table emptied, load `/agents` on the production build | The in-voice empty state renders; the page does not crash; the header, `<h1>`, and footer still show (C8) |
+
+A5 is this phase's cheap-to-miss check and the reason it is written down: Phase 2
+adds a route, not a column. A migration appearing on this branch means something
+reached for the schema, and the schema is closed until Phase 6 says otherwise.
+
+A10 is section A's job rather than a Playwright test's for the reason plan 7.4
+gives — a suite running against one production build cannot empty the database
+without disturbing every other spec. It is a manual step, run once, recorded
+below.
+
+Reproduce A9 without touching your wifi, on Linux, in a network namespace with
+nothing but loopback:
+
+```sh
+unshare -rn bash -c 'ip link set lo up; rm -rf .next; npm run build && npm start'
+```
+
+Confirm the namespace is genuinely offline first — `curl https://registry.npmjs.org`
+inside it must fail — or the check passes for the wrong reason.
+
+---
+
+## B. Quality gates
+
+Inherited by every phase from
+[tech-stack.md](../tech-stack.md#quality-gates).
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| B1 | `npm run typecheck` | Clean. No `any` outside a commented escape hatch, and the card's prop type is derived from `listAgents()`'s return type rather than hand-written |
+| B2 | ESLint | Clean |
+| B3 | `prettier --check .` | Clean |
+| B4 | Vitest | Every unit test passes, including anything plan 7.4 lands |
+| B5 | Playwright | The whole suite passes against the production build, at **both** viewports — the Phase 0/1 specs and this phase's roster and responsive additions |
+| B6 | `npm run check:provenance` | Every decision record in this spec names its source |
+| B7 | `npm run check:changelog` | This branch touched `specs/` and `src/`, and `CHANGELOG.md` with them |
+| B8 | CI | A green run on this branch, executing B1–B7 |
+
+---
+
+## C. Phase-specific correctness
+
+### The route and the card
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| C1 | The roster exists | `/agents` renders one card per seeded agent, eight of them, in alphabetical order (D1) |
+| C2 | Three fields, no fourth | Each card shows name, model family, and ailment badges. No severity, no intake notes, no admission date, no counts (D2) |
+| C3 | No new data access | `git diff main -- src/server/ src/lib/` is empty. The roster calls `listAgents()` unchanged (D1) |
+| C4 | Types are inferred | Renaming `modelFamily` in `schema.prisma` breaks `npm run typecheck` at the card, not only at a test |
+| C5 | Nothing links yet | No `<a>` or `next/link` on a card or a badge. `grep -r "agents/\[" src/` returns nothing — `/agents/[id]` is Phase 3 (D3) |
+| C6 | Still a Server Component | No `"use client"` anywhere in the repo |
+| C7 | Exactly one primitive was added | `src/components/ui/` contains `card.tsx` and `badge.tsx` and nothing else; `package.json` is unchanged (D7) |
+
+### The states
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| C8 | The roster empty state | A10 above: with no agents, `/agents` renders an in-voice message, not a blank page and not a crash (D5) |
+| C9 | The card empty state | An agent with no diagnoses renders "No diagnosis on file yet." rather than an empty gap. Verified by removing a seeded agent's diagnoses and reloading, or by the unit test plan 7.4 lands — not by reading the JSX (D5) |
+| C10 | The loading state is what it can be | **Rewritten during the walk, per the escape hatch this row was written with.** It is not observable: a prerendered segment is not streamed, so there is no partial state for the boundary to fill, and neither holding nor aborting the router's prefetch produces one — measured, not assumed (D6, and the Result section below). What is checked is what is true: a unit test renders `loading.tsx`, asserts it is in clinic voice, and asserts it carries the **same grid string** as the roster, so the swap does not jump when Phase 6 makes it happen. Never ticked on the file merely existing |
+
+### The rest of the site
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| C11 | `/` is untouched | `git diff main -- src/app/page.tsx` is empty. The home page gains no roster preview, no count, no link of its own (D3's boundary, and Phase 7) |
+| C12 | Navigation, if Q2 said yes | One header link, labelled in clinic vocabulary, pointing at a route that exists. The footer is still link-free |
+| C13 | No dead links | Every link in the repo resolves to a route that exists. This is the check that Phase 0's D5 has carried through three phases, and this is the first phase with a link to check |
+| C14 | Landmarks hold on the new route | On `/agents`: exactly one `<h1>`, and `banner`, `main`, `contentinfo` all supplied by the root layout, not the page |
+| C15 | Document title | `/agents` carries a title that names the page, not the bare app name. Metadata beyond that is Phase 8 |
+
+### Responsive — the part this phase can genuinely get wrong
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| C16 | No sideways overflow | The width sweep in `tests/responsive.spec.ts` passes at 320, 480, 640, 1024, and 1536px **on `/agents` as well as `/`** (plan 7.5) |
+| C17 | The grid reflows | One column at phone width, more above `sm:`, verified by measurement rather than by reading the class list — two cards on one row at desktop have the same `y`, and at 320px they do not |
+| C18 | No bespoke breakpoint | Only Tailwind's default breakpoint prefixes appear, and no fixed width. `grep -rnE "\[[0-9]+px\]\|min-\[\|max-\[\|w-\[" src/app src/components --exclude-dir=ui` returns nothing (D4). **Narrowed during the walk:** as first written it swept `src/` whole and tripped on `focus-visible:ring-[3px]` inside the vendored `badge.tsx`. A focus ring is not a breakpoint and not a layout width, and a shadcn primitive is a file we accepted as generated — the same standing `card.tsx` has had since Phase 0. The convention binds the layout we write; the check now says so instead of collecting a false positive that would teach the next reader to ignore it |
+| C19 | Cards are fluid | At 320px no card is wider than the container, and badges wrap rather than widening the card (plan 7.6) |
+| C20 | The container behaves as Q1 decided | The cap assertion in `tests/responsive.spec.ts` matches the answer recorded in [requirements.md](requirements.md#open-questions) — and if the answer was *widen*, the test constant changed in the same commit that changed the layout, with D4 cited (D4) |
+| C21 | It reads well on a phone | **Evidence:** the production build (`npm run build && npm start`) at a 393px-wide viewport, on `/agents`, against the full seed of eight patients — not a screenshot, not `next dev`, and not the desktop layout narrowed by eye. **Procedure:** open it, scroll the roster top to bottom, and read three cards including the longest one (the agent with the most ailments). **Passes when** the roster reads as a list of patients rather than a stack of boxes: every card's content is legible without zooming, nothing is clipped or crowded against an edge, and the badges read as a set of conditions rather than as wrapped debris. A judgement, not a measurement — recorded below with who made it and when |
+
+C21 is the human half of the roadmap's exit criterion, and it is written this
+way because [tech-stack.md](../tech-stack.md#judgement-checks) requires a check
+that asks a human to decide to name its evidence, its procedure, and its pass
+condition. C16–C20 are what a machine can settle; C21 is the part it cannot, and
+stating the bar alone would repeat the C16 failure this project caught in Phase
+1.
+
+---
+
+## D. Parity and constraints
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| D1 | No deploy-target branching | `grep -ri "process.env.VERCEL\|NODE_ENV ===" src/ prisma/` returns nothing meaningful |
+| D2 | No runtime filesystem writes | Nothing outside Prisma writes to disk at request time |
+| D3 | No new dependency | `package.json` and `package-lock.json` are unchanged. The `Badge` primitive is a file in the repo (D7) |
+| D4 | No schema change | `prisma/schema.prisma` and `prisma/migrations/` are byte-identical to `main` |
+| D5 | Rendering strategy unchanged | `/agents` is prerendered at build time, like `/`. No `dynamic`, no `revalidate`, no `no-store` anywhere — that is Phase 6's decision to make (D6, and Phase 1's D12) |
+| D6 | README honesty | Every command in the README was run during A1–A9 and behaved as documented |
+
+---
+
+## E. Not-done conditions
+
+Explicit disqualifiers. Any one of these means the phase is not finished,
+regardless of how green the tests are.
+
+- `/agents/[id]` exists in any form, or a card links anywhere.
+- A severity, an intake note, an admission date, or an appointment count appears
+  on a roster card (D2).
+- `/` gained content: a roster preview, a count, a "recent intakes" list. That
+  is Phase 7.
+- The schema changed, or a migration appeared on this branch.
+- A second query landed in `src/server/`, or `listAgents()` was widened, without
+  a written finding explaining why Phase 1's D9 got it wrong.
+- A third shadcn primitive was pulled in, or any dependency was added.
+- A bespoke breakpoint or a fixed pixel width entered the styling (D4).
+- The responsive sweep still visits only `/`.
+- The loading state is ticked because the file exists, with nothing rendering it
+  and no finding recorded (D6, C10).
+- The card empty state is ticked by reading the JSX rather than by rendering it.
+- `"use client"` appears anywhere.
+- A design pass happened — bespoke typography, motion, social preview metadata.
+  That is Phase 8.
+- Q1 or Q2 in [requirements.md](requirements.md#open-questions) is still open,
+  or was answered by the implementation rather than by the owner.
+- A comment or docstring still points at a phase or check number this phase
+  replaced — in particular `ClinicHeader`'s, which promises a nav that this
+  phase either delivers or consciously declines (plan 6.2).
+- `strict: true` is off, or an `any` is uncommented.
+
+---
+
+## Merge criteria
+
+Merge when **A1–A10, B1–B8, C1–C21, and D1–D6 all pass, and no condition in E
+holds.**
+
+Record the result of section A in the PR description — including the machine and
+Node version it was run on. A clean-clone claim with no evidence behind it is the
+failure mode Phase 0 existed to prevent, and this phase inherits the habit.
+
+Merge with the branch **kept**, not deleted:
+[tech-stack.md](../tech-stack.md#branch-retention) keeps every `phase-N-*`
+branch for the owner's end-of-project review.
+
+## Result
+
+**Walked 2026-08-20 on Linux 6.18 (WSL2), Node v22.23.2.** Everything holds
+except the two checks that are not the implementer's to sign off, both named at
+the end.
+
+Section A ran in a fresh clone of this branch at
+`/tmp/.../scratchpad/clone`, in order:
+
+- **A2** `npm install` — clean, no prompt, no manual step.
+- **A4** `npm test` on the bare clone, before anything else — 44 tests pass and
+  no `clinic.db` exists afterwards. The three new ones are the card's two
+  branches and the loading state.
+- **A5** `npm run migrate` — applied. `git diff main...HEAD` over `prisma/`,
+  `package.json`, `package-lock.json`, `src/server/`, `src/lib/`, and
+  `src/app/page.tsx` is **empty**, which is C3, C11, D3 and D4 in one command:
+  this phase added a route and changed no schema, no dependency, no query, and
+  no existing page.
+- **A6** `npm run seed` — 8 patients, 8 ailments, 6 therapies, 3 on today's
+  calendar.
+- **A7, A8** dev and the production build both serve eight cards at `/agents`,
+  with `Atlas` / `Meridian-4` / `Chronic Context Loss` read from the database.
+  The build reports `/` and `/agents` both `○ (Static)`, which is D5.
+- **A9** cold offline build in a `unshare -rn` namespace, with the absence of a
+  route out confirmed first (`curl https://registry.npmjs.org` failed inside
+  it). `rm -rf .next` beforehand. Built and served the roster.
+- **A10** the agents table emptied and the app **rebuilt** — the rebuild is the
+  point, and it is D12 showing its teeth: a prerendered page keeps serving the
+  roster it was built with, so an empty database is invisible until the next
+  build. `/agents` then returned 200, the in-voice empty state, no cards, and
+  the header, `<h1>` and footer intact.
+
+Sections B, C and D pass as written. Five things the walk found are worth more
+than a tick:
+
+- **The loading state cannot be observed, and now the spec says so.** D6
+  predicted a narrow window; there is none. Both attempts are recorded in D6.
+  The Playwright test written for it was deleted rather than weakened, C10 was
+  rewritten through the escape hatch it was drafted with, and what remains is a
+  unit test that renders the file, checks its voice, and checks it carries the
+  **same grid string** as the roster. Incidental confirmation from A10's HTML:
+  the fallback is embedded in the flight payload — it ships, it just never
+  renders.
+- **C18 was collecting a false positive.** As drafted it swept `src/` whole and
+  tripped on `focus-visible:ring-[3px]` inside the vendored `badge.tsx`. A focus
+  ring is not a breakpoint. Narrowed to the layout we write, with the reason in
+  the row, because a check that cries wolf is a check people learn to skip.
+- **A flake was pinned rather than re-run.** The type-scale assertion failed
+  once, on the phone project, and passed every run after. The property is not
+  racy; taking a computed font size immediately after a resize plus a navigation
+  is. It is now retried as a unit — and the retry was proved not to have
+  neutered it by inverting the utilities and watching it fail anyway.
+- **Cards in a grid row did not share a height.** Found in the desktop evidence
+  captured for C21, not by a test: the grid stretches the `<li>` and the card
+  sat at its content height inside it, so a row of patients with different
+  numbers of ailments came out ragged. One `h-full`. It is a layout defect
+  rather than a treatment question, which is why it was fixed here and not left
+  for Phase 8.
+- **The A9 recipe detaches a server if you script it.** Running `npm start`
+  inside `unshare -rn` with a `&` leaves a `next-server` in a network namespace
+  nothing can reach and no tracked task owns — which is the exact shape of the
+  incident behind the 2026-08-17 owner decision on `kill`. It was left running
+  and raised with the owner rather than pattern-killed. Anyone repeating A9
+  should keep the server in the foreground, as the recipe in section A above
+  writes it.
+
+**Still open, and neither is the implementer's to close:**
+
+- **C21 — it reads well on a phone.** The evidence named in the row was captured
+  and is with the owner: the production build at 393px, full roster, plus the
+  desktop counterpart. The verdict, its author, and its date go in the row when
+  it is given.
+- **B8 — green CI.** The branch has not been pushed, so no run exists yet.
+
+**Phase 2 is not closed.** A1–A10, B1–B7, C1–C20 and D1–D6 hold, and no
+condition in section E does. It closes when C21 carries a verdict and CI is
+green.

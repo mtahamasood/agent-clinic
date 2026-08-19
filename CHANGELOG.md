@@ -11,6 +11,55 @@ Dates are the date the work landed on `main`.
 
 ---
 
+## 2026-08-20
+
+- **Phase 2 — the agent roster.** `/agents` lists the clinic's eight patients as
+  cards: name, model family, and the ailments each one presents. The first route
+  beyond `/`, the first list rendered from a relation, and the first layout in
+  this project that could genuinely break — a card grid is where *fluid by
+  default* stops being free.
+  - **No new data access, which was the point.** The page calls Phase 1's
+    `listAgents()` unchanged; `src/server/` and `src/lib/` are untouched on the
+    branch. D9 wrote that query for this page by name, and this is the first
+    evidence it wrote the right thing.
+  - **Two owner answers, taken before code was written.** The shared container
+    **keeps** `max-w-2xl`, so the roster reflows one column to two rather than
+    three — reversible in a way that narrowing after Phase 8 has designed
+    against a wide page is not. And the header **gains navigation**, its first,
+    now that there is a route to point at; registered in `specs/mission.md`
+    because the roadmap does not ask for navigation until Phase 7.
+  - **Approved as one link, shipped as two.** Writing the header made the
+    omission obvious: a masthead that can only send you *to* the roster strands
+    the visitor there. The wordmark became the link home. Recorded as a
+    correction inside D3 rather than absorbed into the diff.
+  - **The loading state cannot be seen, and that is now measured rather than
+    suspected.** D6 predicted a small window; there is none. A prerendered
+    segment is not streamed, so holding the router's prefetch only delays the
+    commit and aborting it falls back to a document request the Suspense
+    boundary has no part in — both were tried, in Playwright, and the test was
+    deleted rather than weakened until it passed. `loading.tsx` ships anyway, and
+    what is checked is what is true: a unit test renders it, asserts it is in
+    voice, and asserts it carries the *same grid string* as the roster so the
+    swap will not jump when Phase 6 changes the rendering strategy. C10 was
+    rewritten mid-walk, using the escape hatch the check was written with.
+  - **The responsive sweep now visits every route, not just `/`.** It had been
+    written against a page of prose in a capped container, which is the easy
+    case; a sweep that still visited only `/` would have passed while the roster
+    overflowed. Two card-level checks joined it — the grid reflows, asserted by
+    geometry rather than by reading a class list, and no card outgrows its
+    container at 320px, which is what a `whitespace-nowrap` badge on a long
+    ailment name would do.
+  - **A flaky test was pinned instead of re-run.** The type-scale check failed
+    once and passed on every run after. The property is not racy; the
+    measurement is — a resize and a navigation back to back, with the computed
+    size read immediately. It is now retried as a unit, and the retry was proved
+    not to have neutered it by inverting the utilities and watching it fail.
+  - `Badge` is the second shadcn primitive, and the cap Phase 0's D2 set is back
+    down to one for Phase 3. No dependency was added: `class-variance-authority`
+    was already here for `Card`.
+  - Vitest now collects `.tsx` tests, so the card's undiagnosed branch — the one
+    the seed can never reach — is rendered rather than eyeballed.
+
 ## 2026-08-19
 
 - **CI stops hanging on `apt-get`, and can no longer hang for six hours.** The
