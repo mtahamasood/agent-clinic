@@ -17,8 +17,10 @@ import Link from "next/link";
  * fitting at 320px it becomes a design decision with a spec behind it — four
  * labels was that day, and the Phase 4+5 spec's answer (D9) is the smallest
  * one: the row wraps. The nav takes a second line at widths where four words
- * will not share one, and the sweep in tests/responsive.spec.ts is what holds
- * it to that.
+ * will not share one — what that buys, measured rather than assumed, is the
+ * gutter: an unwrapped nav shrinks into the `px-6` without ever scrolling the
+ * document, so the dedicated gutter check in tests/responsive.spec.ts (not
+ * the overflow sweep) is what holds this in place.
  */
 export function ClinicHeader() {
   return (

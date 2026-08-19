@@ -108,7 +108,7 @@ Inherited by every phase from [tech-stack.md](../tech-stack.md#quality-gates).
 | --- | --- | --- |
 | C21 | Six empty states render in voice | Each of D8's six, verified by a unit test that renders the component (or, for the two index pages, the page's list component) empty with the exact pinned copy — never by reading JSX (D8) |
 | C22 | Judgement: the reference reads as a reference | **Evidence:** the production build at a 393px viewport: `/ailments`, the Chronic Context Loss entry, `/therapies`, the Peer Review Circle entry, and `/therapies/for/tool-call-tremor`. **Procedure:** open all five, read each top to bottom, follow one cross-link from each. **Passes when** each entry reads as one thing described — the reader can say who presents with the condition and what treats it (or what a therapy involves and what it treats) without scrolling back up, the filter page is recognisably the catalog narrowed rather than a new kind of page, and nothing is clipped or crowded. A judgement, not a measurement — recorded with who made it and when |
-| C23 | Header nav is complete and wraps | Patients, Ailments, Therapies all reachable from the banner on every route; at 320px the header wraps rather than scrolls — the sweep's overflow check is the measurement, this row is the click-through (D9) |
+| C23 | Header nav is complete and wraps | Patients, Ailments, Therapies all reachable from the banner on every route, and at 320px every banner link respects the container's gutters, the nav taking a second line to do it. **The sweep cannot hold this row** — established by mutation on 2026-08-20: with `flex-wrap` removed the nav shrinks into the gutter (last label at 314px against the 296px line) without ever scrolling the document, and the sweep stays green — so the suite carries a dedicated gutter check, itself proven by the same mutation both ways (D9) |
 | C24 | Titles name the pages | All five new routes and both misses, per D10, asserted in the new specs |
 | C25 | Landmarks hold on every new route | Exactly one `<h1>`; `banner`, `main`, `contentinfo` from the root layout |
 | C26 | Still a Server Component | No `"use client"` anywhere in the repo |
@@ -118,7 +118,7 @@ Inherited by every phase from [tech-stack.md](../tech-stack.md#quality-gates).
 
 | # | Check | Passes when |
 | --- | --- | --- |
-| C28 | No sideways overflow | The width sweep passes at 320, 480, 640, 1024, and 1536px on all five new routes as well as the existing three (plan 6.6) — this is also D9's wrap, measured |
+| C28 | No sideways overflow | The width sweep passes at 320, 480, 640, 1024, and 1536px on all five new routes as well as the existing three (plan 6.6). It does **not** measure D9's wrap — C23 records why, and carries the check that does |
 | C29 | No bespoke breakpoint | The Phase 2 grep for breakpoint prefixes and fixed widths still returns nothing outside `ui/` |
 
 C22 is the human half of the exit criterion, written to the

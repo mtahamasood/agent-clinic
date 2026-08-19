@@ -402,9 +402,22 @@ in the [Phase 2 requirements](../2026-08-20-agent-roster/requirements.md).
 **Ailments** and **Therapies** join **Patients** in the header nav, same type
 scale, in that order after the masthead. The header's row becomes
 wrap-tolerant: `flex-wrap` on the nav (and on the row that holds it), so that
-at widths where four words no longer share a line, the nav breaks to a second
-line instead of forcing a sideways scroll. Nothing else changes — no nav bar
-treatment, no mobile menu, no active-state styling, no icon.
+at widths where four words no longer share a line, the nav takes a second
+line. Nothing else changes — no nav bar treatment, no mobile menu, no
+active-state styling, no icon.
+
+*Measured on 2026-08-20, and the first draft of this decision was wrong about
+the failure mode.* The masthead and three labels need ~338px of row where
+320px exists, so the wrap engages and the nav sits on its own line at phone
+width — that much held. But the draft claimed the wrap prevented "a sideways
+scroll", and removing `flex-wrap` was measured to leave the overflow sweep
+**green**: the unwrapped nav shrinks into the right gutter (the last label
+runs to 314px against a 296px gutter line) and never reaches the viewport
+edge, so the document never scrolls. What the wrap actually buys is the
+gutter — banner links held to the same `px-6` the body content respects — and
+since the sweep cannot fail on that, the suite carries a dedicated check that
+was itself verified by the same mutation: red with the wrap removed, green
+with it back (C23).
 
 *Rationale:* the 2026-08-20 header decision in
 [mission.md](../mission.md#owner-decisions) is explicit twice over: "each later
