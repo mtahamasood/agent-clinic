@@ -363,8 +363,28 @@ suite runs green afterwards.
   depends on the hour the build ran.
 - **Q3** — **answered**, 2026-08-20. The page title is a requirement now, with a
   source, a decision record (D12) and a register entry.
-- **B8** — **open.** Pushing the branch alone produces no run; the pull request
-  is what makes CI reachable.
+- **B8** — **passed.** Green on pull request
+  [#15](https://github.com/mtahamasood/agent-clinic/pull/15), run
+  [32310873413](https://github.com/mtahamasood/agent-clinic/actions/runs/32310873413),
+  in 1m28s — comfortably inside the ten-minute job cap, and with
+  `playwright install chromium` behaving as the 2026-08-19 decisions intended.
+  Worth repeating what Phase 2 recorded: pushing the branch produced no run at
+  all, because `push` has been scoped to `main` since #11. The pull request is
+  what makes this check reachable.
 
-**Everything but B8 holds.** Phase 3 closes when CI goes green on the pull
-request.
+  The commit carrying this paragraph triggers a second run, since branch
+  protection judges the head commit rather than the branch. That run has to be
+  green too; the one named above is what proved the code, and the one after it
+  proves the sentence describing it did no harm.
+
+**Everything holds.** A1–A10, B1–B8, C1–C27 and D1–D7 all pass, and no condition
+in section E does. Phase 3 is closed on merge, with the branch kept.
+
+The lesson this phase leaves for Phase 4, in the way Phase 1 left D12 and Phase
+2 left the loading state: **a check is not finished when it is written, it is
+finished when it has been seen to fail.** Four of the checks here read as
+rigour, passed on green, and verified nothing — and every one of them was
+written by someone who believed it worked. The cheapest guard found so far is
+the one this phase ended up using: break the thing on purpose, watch the check
+go red, put it back. It costs a minute per check and it is the only evidence
+that distinguishes a gate from a sentence.
