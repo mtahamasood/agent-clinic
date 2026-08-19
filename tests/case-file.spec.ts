@@ -172,6 +172,49 @@ test("the root layout still supplies the landmarks on a case file", async ({
 });
 
 /**
+ * The case file's own cross-links (Phase 4+5's D5): the gap Phase 3's Q2
+ * accepted for one phase — an ailment name with nowhere to find out what it
+ * means — is closed, in both columns of the record.
+ */
+test("a case file's ailments and therapies link to their own pages", async ({
+  page,
+}) => {
+  await page.goto("/agents/atlas");
+
+  const chronic = diagnosisEntries(page).filter({
+    hasText: "Chronic Context Loss",
+  });
+  await expect(
+    chronic.getByRole("link", { name: "Chronic Context Loss" }),
+  ).toHaveAttribute("href", "/ailments/chronic-context-loss");
+
+  await chronic.getByRole("link", { name: "Chronic Context Loss" }).click();
+  await expect(page).toHaveURL("/ailments/chronic-context-loss");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Chronic Context Loss",
+  );
+  // And the way back around the triangle: this ailment's page names the
+  // patient we came from (the exit criterion's "other affected agents").
+  await expect(
+    page.getByRole("main").getByRole("link", { name: "Atlas" }),
+  ).toBeVisible();
+
+  await page.goto("/agents/atlas");
+  const session = page
+    .getByRole("main")
+    .locator("li", { hasText: "Context Window Hygiene" })
+    .first();
+  await expect(
+    session.getByRole("link", { name: "Context Window Hygiene" }),
+  ).toHaveAttribute("href", "/therapies/context-window-hygiene");
+  await session.getByRole("link", { name: "Context Window Hygiene" }).click();
+  await expect(page).toHaveURL("/therapies/context-window-hygiene");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Context Window Hygiene",
+  );
+});
+
+/**
  * The roadmap's exit criterion is "every agent on the roster opens a complete
  * case file", so every one of them is opened rather than the one the test
  * happened to pick (C1).
@@ -181,9 +224,11 @@ test("every patient on the roster opens a file of their own", async ({
 }) => {
   await page.goto("/agents");
 
+  // Card-title links only: the badges also link now (Phase 4+5's D5), and
+  // they point at ailments, not patients.
   const names = await page
     .getByRole("main")
-    .getByRole("link")
+    .locator("a[href^='/agents/']")
     .evaluateAll((links) =>
       links.map((link) => ({
         name: link.textContent?.trim() ?? "",

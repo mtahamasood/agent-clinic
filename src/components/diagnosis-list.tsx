@@ -1,8 +1,8 @@
-import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { SeverityBadge } from "@/components/severity-badge";
 import { formatClinicDate } from "@/lib/clinic-date";
 import { compareNames } from "@/lib/name-order";
-import { compareSeverity, severityLabel } from "@/lib/severity";
-import type { Severity } from "@/generated/prisma/enums";
+import { compareSeverity } from "@/lib/severity";
 import type { getAgent } from "@/server/agents";
 
 /**
@@ -18,7 +18,13 @@ import type { getAgent } from "@/server/agents";
  * rendered by a test: the seed diagnoses all eight patients, so nothing in a
  * demo, a screenshot, or the Playwright run ever reaches it (D9).
  *
+ * The ailment's name links to its directory entry — the gap Phase 3's Q2
+ * accepted for exactly one phase, closed by Phase 4+5's D5 now that the route
+ * exists. The severity badge is the shared one, since the ailment's own page
+ * renders the same fact from the other end (Phase 4+5's D11).
+ *
  * Phase 3: specs/2026-08-20-agent-case-file/requirements.md.
+ * Phase 4+5: specs/2026-08-20-ailment-directory-therapy-catalog/requirements.md.
  */
 
 // Derived from the query rather than declared beside it (D1): rename a column
@@ -27,19 +33,6 @@ import type { getAgent } from "@/server/agents";
 // long before this component sees anything.
 type CaseFile = NonNullable<Awaited<ReturnType<typeof getAgent>>>;
 type CaseFileDiagnosis = CaseFile["diagnoses"][number];
-
-// The vendored primitive's own variants and nothing else (D2's boundary). A
-// severity colour scale of our own would be a design decision with no source,
-// in the phase least equipped to make one — and the word carries the meaning
-// here regardless, which is why it is written out beside the colour.
-const SEVERITY_VARIANT: Record<
-  Severity,
-  "outline" | "secondary" | "destructive"
-> = {
-  MILD: "outline",
-  MODERATE: "secondary",
-  SEVERE: "destructive",
-};
 
 export function DiagnosisList({
   diagnoses,
@@ -85,10 +78,15 @@ export function DiagnosisList({
                 appointments — is what made a Playwright locator need a comment
                 apologising for itself. Items are items in both lists now, and
                 `<h3>` belongs to the appointment groups alone. */}
-            <p className="font-medium">{diagnosis.ailment.name}</p>
-            <Badge variant={SEVERITY_VARIANT[diagnosis.severity]}>
-              {severityLabel(diagnosis.severity)}
-            </Badge>
+            <p className="font-medium">
+              <Link
+                href={`/ailments/${diagnosis.ailmentId}`}
+                className="hover:underline"
+              >
+                {diagnosis.ailment.name}
+              </Link>
+            </p>
+            <SeverityBadge severity={diagnosis.severity} />
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             Diagnosed {formatClinicDate(diagnosis.diagnosedOn)}

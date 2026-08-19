@@ -9,11 +9,11 @@ This is a spec-driven codebase: every feature traces back to a document in
 [`specs/`](specs/). Start with [the mission](specs/mission.md), then
 [the stack](specs/tech-stack.md) and [the roadmap](specs/roadmap.md).
 
-> **Status:** Phase 3 — case files. `/agents` lists the clinic's eight patients
-> as cards, and each name opens that patient's record: intake notes, every
-> diagnosis with its severity, and the appointments they have had and have
-> coming. The ailment directory — what each condition is, and who else presents
-> with it — is Phase 4.
+> **Status:** Phase 4+5 — the four nouns are a web. `/ailments` describes every
+> condition the clinic recognises — symptoms, who presents with it, what treats
+> it — and `/therapies` catalogs every treatment, with the catalog filterable
+> by ailment. Every rendering of a noun's name is now a link to its page.
+> Booking and the dashboard are Phase 6+7.
 
 ## Requirements
 

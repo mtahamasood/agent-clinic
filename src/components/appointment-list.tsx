@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatClinicDateTime } from "@/lib/clinic-date";
 import { appointmentStatusLabel } from "@/lib/appointment-status";
 import type { getAgent } from "@/server/agents";
@@ -17,7 +18,12 @@ import type { getAgent } from "@/server/agents";
  * ever reaches it (D9). It becomes ordinary in Phase 6, where a patient exists
  * before their first booking.
  *
+ * The therapy's name links to its catalog entry (Phase 4+5's D5) — a link to
+ * what a session is, not an affordance to book another one; booking is Phase
+ * 6+7's and nothing here writes.
+ *
  * Phase 3: specs/2026-08-20-agent-case-file/requirements.md.
+ * Phase 4+5: specs/2026-08-20-ailment-directory-therapy-catalog/requirements.md.
  */
 
 // Derived from the query rather than declared beside it (D1).
@@ -95,7 +101,14 @@ function Sessions({
             key={appointment.id}
             className="border-t border-foreground/10 pt-4 first:border-t-0 first:pt-0"
           >
-            <p className="font-medium">{appointment.therapy.name}</p>
+            <p className="font-medium">
+              <Link
+                href={`/therapies/${appointment.therapyId}`}
+                className="hover:underline"
+              >
+                {appointment.therapy.name}
+              </Link>
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {formatClinicDateTime(appointment.scheduledFor)} ·{" "}
               {appointmentStatusLabel(appointment.status)}

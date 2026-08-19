@@ -21,7 +21,16 @@ import { expect, test } from "@playwright/test";
 // forgets is a phase whose layout is unmeasured. The case file is a seeded id
 // rather than a placeholder — `atlas` is hand-written in prisma/seed-data.ts
 // precisely so it can be named in a URL.
-const ROUTES = ["/", "/agents", "/agents/atlas"];
+const ROUTES = [
+  "/",
+  "/agents",
+  "/agents/atlas",
+  "/ailments",
+  "/ailments/chronic-context-loss",
+  "/therapies",
+  "/therapies/peer-review-circle",
+  "/therapies/for/tool-call-tremor",
+];
 
 // 320px is the narrowest viewport the convention supports; 1536px is a wide
 // desktop. The middle values sit either side of Tailwind's `sm` and `lg`

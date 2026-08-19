@@ -26,8 +26,10 @@ import type { listAgents } from "@/server/agents";
  * The *name* rather than the whole card, deliberately (Phase 3's D5): wrapping
  * the card would make the link's text every word on it — the name, the model
  * family, and each ailment run together — so what the reader is told they are
- * clicking would be a paragraph rather than a patient. The badges still link
- * nowhere; `/ailments/[id]` is Phase 4.
+ * clicking would be a paragraph rather than a patient. The badges link to their
+ * ailments' directory entries — they were dead text for exactly as long as
+ * `/ailments/[id]` did not exist, which is Phase 0's no-dead-links rule
+ * pointing first away from the route and then at it (Phase 4+5's D5).
  */
 
 // Derived from the query rather than declared beside it (D1): rename a column
@@ -71,7 +73,12 @@ export function AgentCard({ agent }: { agent: RosterAgent }) {
           <ul className="flex flex-wrap gap-1.5">
             {ailments.map((ailment) => (
               <li key={ailment.id}>
-                <Badge variant="secondary">{ailment.name}</Badge>
+                {/* `asChild` puts the link inside the badge's own shape — no
+                    new primitive, and the vendored variant already carries a
+                    hover treatment for links. */}
+                <Badge variant="secondary" asChild>
+                  <Link href={`/ailments/${ailment.id}`}>{ailment.name}</Link>
+                </Badge>
               </li>
             ))}
           </ul>
