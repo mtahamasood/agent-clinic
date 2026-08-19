@@ -569,6 +569,34 @@ clean" as a per-phase gate, which a stale generated client silently exempts —
 with the claim being repaired coming from D9 in the
 [Phase 1 requirements](../2026-08-17-the-four-nouns/requirements.md).
 
+### D12 — A page's title names the page
+
+`generateMetadata()` returns `"{patient} — AgentClinic"` for a case file and
+`"No such patient — AgentClinic"` for a miss. `/agents` already does the same,
+and every route after this one does too.
+
+*Rationale:* a tab is the one piece of a page a reader sees when the page is not
+in front of them, and eight tabs reading `AgentClinic` name nothing. It costs
+one function and no dependency.
+
+*The reason this record exists at all is that the requirement had none.* It ran
+for two phases on a citation to check C15 of the
+[Phase 2 validation](../2026-08-20-agent-roster/validation.md) — and a
+validation row is not one of the three sources
+[tech-stack.md](../tech-stack.md#requirement-provenance) admits. Phase 2's
+requirements and plan never mention a title. The branch's own review found the
+chain terminating in mid-air, and the rule's own instruction for that case is
+"attribute it or delete it — never keep it silently".
+
+*Boundary, and it is the same one Phase 2 drew:* a title, and nothing else.
+No description, no canonical URL, no Open Graph image, no favicon work. The full
+metadata pass is Phase 8's, and this record does not license the rest of it.
+
+*Source:* owner decision, 2026-08-20, registered in
+[mission.md](../mission.md#owner-decisions) — put as [Q3](#open-questions) with
+the honest alternative of deleting the titles instead, and delegated back rather
+than picked, which that entry records rather than smooths over.
+
 ## Constraints inherited
 
 From [tech-stack.md](../tech-stack.md), all still binding:
@@ -596,11 +624,10 @@ From [tech-stack.md](../tech-stack.md), all still binding:
 
 ## Open questions
 
-**One is open.** Q1 and Q2 were put to the owner on 2026-08-20 before any code
-was written, and both are answered below. Q3 was not: it is a source that turned
-out not to exist, found by this branch's own review *after* the code was
-written, and it is the one thing on this branch a reader should not take as
-settled.
+None. Q1 and Q2 were put to the owner on 2026-08-20 before any code was
+written. Q3 was not — it is a source that turned out not to exist, found by this
+branch's own review *after* the code was written — and it was answered the same
+day.
 
 **Q1 — Do presenting ailments read worst first, or mildest first?** **Worst
 first, as recommended.** `SEVERE` at the top, `MILD` at the bottom, ties broken
@@ -648,8 +675,9 @@ one phase.
 
 No register entry: declining to add a field installs nothing.
 
-**Q3 — Where does "a page's title names the page" come from?** **Open, and
-raised on 2026-08-20 by this branch's own review rather than before the code.**
+**Q3 — Where does "a page's title names the page" come from?** **Answered
+2026-08-20: it comes from the owner, as of that date.** Raised by this branch's
+own review rather than before the code, which is why it arrived late.
 
 This phase added `generateMetadata()` so a case file's tab reads
 *"Atlas — AgentClinic"*, and cited check C15 of the
@@ -677,10 +705,16 @@ and every tab reads "AgentClinic". That is worse for the reader and it is
 available, which is what makes the first option a decision rather than a
 default.
 
-*Left in the code, deliberately and visibly, pending the answer.* Deleting it
-would leave `/agents` titled and `/agents/[id]` not, on the strength of a rule
-nobody has stated. Written down here so that whichever way it goes, it is not
-silent — which is the one outcome the provenance rule forbids.
+*The answer, and the manner of it, both recorded.* Presented with the two
+options, the owner delegated the choice rather than picking one, and the
+recommendation was taken: page titles name their page, `/agents` retroactively
+included. That is an owner signature and not an agent's default — the register
+entry in [mission.md](../mission.md#owner-decisions) says so in those words, and
+says which parts the owner supplied and which the recommendation did. Writing it
+up as though the rule had been handed down unprompted would have made the record
+a tidier version of exactly the fault it is correcting. D12 above now carries
+the requirement, and check C21 points at D12 rather than at a validation row in
+a closed phase.
 
 Ambiguity found during implementation goes to the backlog or reopens this file,
 not into the code.

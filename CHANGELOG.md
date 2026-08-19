@@ -72,11 +72,16 @@ Dates are the date the work landed on `main`.
     pinned the date locale — so that a rendered string would not depend on the
     machine — left `localeCompare` bare in the severity tiebreak and the
     roster's badges, where it has the same exposure. `src/lib/name-order.ts`.
-  - **A requirement with no source, raised rather than attributed.** The page
-    title traced to a validation row in a closed phase, which is not one of the
-    three sources the provenance rule admits. It is open as Q3 rather than
-    given a plausible-sounding home — which is precisely the move that produced
-    the accessibility incident this project keeps referring to.
+  - **A requirement with no source, raised rather than attributed — and then
+    given one.** The page title traced to a validation row in a closed phase,
+    which is not one of the three sources the provenance rule admits, so it had
+    been binding for two phases on nothing. Raised as Q3 with the honest
+    alternative of deleting the titles outright; the owner delegated the choice
+    and the recommendation was taken. Page titles now name their page,
+    `/agents` retroactively included, as a dated register entry and D12. The
+    entry records that the choice was delegated rather than pronounced, because
+    a record that smoothed that over would be a tidier version of the fault it
+    corrects.
   - **Two new modules, two new components, no new dependency and no new query.**
     `src/lib/clinic-date.ts` pins the date format and `src/lib/name-order.ts`
     pins name collation, so neither a rendered string nor a rendered order

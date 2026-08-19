@@ -135,7 +135,7 @@ Inherited by every phase from
 | C18 | `/` is untouched | `git diff main -- src/app/page.tsx` is empty. The home page gains no count, no link, no preview (Phase 7) |
 | C19 | No dead links | Every link in the repo resolves to a route that exists. Phase 0's D5, carried through four phases, and the first phase in which a link to `/agents/[id]` is the *correct* thing rather than the forbidden one |
 | C20 | Landmarks hold on the new route | On a case file: exactly one `<h1>`, and `banner`, `main`, `contentinfo` all supplied by the root layout, not the page |
-| C21 | Document title | A case file's title names the patient and the 404's names the miss, not the bare app name — both asserted in `tests/case-file.spec.ts`. **The requirement behind this row has no source**, which the branch's review established on 2026-08-20: it was cited to Phase 2's C15, and a validation row is not one of the three admitted sources. Open as [Q3](requirements.md#open-questions); this row therefore records what the code does, and does not assert that it should |
+| C21 | Document title | A case file's title names the patient and the 404's names the miss, not the bare app name — both asserted in `tests/case-file.spec.ts` (D12). This row cited Phase 2's C15 until 2026-08-20, when the branch's review established that the requirement had no source: a validation row is not one of the three admitted sources. Raised as Q3, answered by the owner the same day, and it now rests on D12 and the register entry behind it rather than on a check in a closed phase |
 | C27 | Name order comes from one place | `grep -rn "\.localeCompare(" src/` returns nothing (exit 1): every comparison of two names goes through the pinned collator in `src/lib/name-order.ts`. Added 2026-08-20 — the bare form follows the machine's default locale, so the severity tiebreak and the roster's badge order could differ between two builds of the same database (D8, extended). Matches the *call* and not the word, and both halves were run before this row was written: clean on the branch, and red against a planted `a.name.localeCompare(b.name)`. Writing `--exclude` here instead is how C22 came to be ticked on a command that never passed |
 | C22 | Dates come from one place | `grep -rn "toLocaleDateString\|toLocaleString\|Intl.DateTimeFormat" src/ --exclude=clinic-date.ts` returns nothing. **Corrected 2026-08-20:** the exclude was written `--exclude=lib/clinic-date.ts`, and `--exclude` matches a glob against the *basename*, so it excluded nothing and the command returned three hits every time — published and ticked without being run once. The module's own output is unit-tested against fixed instants, and the suite now also asserts a formatted date's **shape** on the page, so a module that returned `""` would fail (D8) |
 
@@ -146,7 +146,7 @@ Inherited by every phase from
 | C23 | No sideways overflow | The width sweep in `tests/responsive.spec.ts` passes at 320, 480, 640, 1024, and 1536px on a case file as well as `/` and `/agents` (plan 8.7) |
 | C24 | Prose wraps | At 320px no block on a case file has `scrollWidth > clientWidth` — measured on **Bodhi**, who carries all three kinds of prose the row names. **Rewritten 2026-08-20, twice over.** It compared each block's `boundingBox()` against the container edge, which cannot fail: a `<p>` is a block box, so its border box is the container's width whatever the text inside does. Adding `whitespace-nowrap` to the intake notes was measured to leave it green, and to make it red after the rewrite. It also named "the appointment notes" while visiting Atlas, whose two bookings have none (plan 8.8) |
 | C25 | No bespoke breakpoint | Only Tailwind's default breakpoint prefixes appear, and no fixed width: `grep -rnE "\[[0-9]+px\]|min-\[|max-\[|w-\[" src/app src/components --exclude-dir=ui` returns nothing. The exclusion of the vendored primitives is Phase 2's C18, narrowed there for the reason its row gives |
-| C26 | It reads as a patient's record on a phone | **Evidence:** the production build (`npm run build && npm start`) at a 393px-wide viewport, on the case files of **Bodhi** (three diagnoses at three severities, one past session and nothing to come) and **Atlas** (two diagnoses, and at least one session still to come — whether his 10:00 has moved to *Already seen* depends on the hour the build ran, which is D7's build-time split and not something the reader should have to allow for) — not a screenshot, not `next dev`, and not the desktop layout narrowed by eye. **Procedure:** open both, read each top to bottom, and read the 404 at `/agents/not-a-patient` on the same build. **Passes when** the page reads as one patient's record rather than as three stacked lists: the profile identifies who this is before any list starts, a diagnosis's severity is readable without hunting for it, the upcoming and past appointments are distinguishable at a glance, and nothing is clipped or crowded against an edge. A judgement, not a measurement — recorded with who made it and when |
+| C26 | It reads as a patient's record on a phone | **Evidence:** the production build (`npm run build && npm start`) at a 393px-wide viewport, on the case files of **Bodhi** (three diagnoses at three severities, one past session and nothing to come) and **Atlas** (two diagnoses, and at least one session still to come — whether his 10:00 has moved to *Already seen* depends on the hour the build ran, which is D7's build-time split and not something the reader should have to allow for) — not a screenshot, not `next dev`, and not the desktop layout narrowed by eye. **Procedure:** open both, read each top to bottom, and read the 404 at `/agents/not-a-patient` on the same build. **Passes when** the page reads as one patient's record rather than as three stacked lists: the profile identifies who this is before any list starts, a diagnosis's severity is readable without hunting for it, the upcoming and past appointments are distinguishable at a glance, and nothing is clipped or crowded against an edge. A judgement, not a measurement — recorded with who made it and when. **Passed** — owner verdict, 2026-08-20, on the evidence this row names, taken against the post-review build rather than the one the walk produced |
 
 C26 is the human half of the roadmap's exit criterion — "every agent on the
 roster opens a **complete** case file" — and complete is not a thing a test can
@@ -327,10 +327,16 @@ staleness" was also wrong in a way that mattered, since that framing is what mad
 it acceptable: D12 is data going stale, while this is an unchanged row migrating
 to the wrong heading.
 
-**One requirement turned out to have no source at all.** The page title was cited
-to Phase 2's C15, and a validation row is not one of the three admitted sources.
-It is [Q3](requirements.md#open-questions), open, and the only thing on this
-branch a reader should not treat as settled.
+**One requirement turned out to have no source at all.** The page title was
+cited to Phase 2's C15, and a validation row is not one of the three admitted
+sources — so it had been binding for two phases on nothing. Raised as
+[Q3](requirements.md#open-questions) rather than quietly attributed, and
+answered by the owner on 2026-08-20: page titles name their page, `/agents`
+retroactively included. It is D12 now, with a register entry in
+[mission.md](../mission.md#owner-decisions) that records the owner delegated the
+choice rather than picking it — a distinction worth keeping, since a record that
+dressed a delegation up as a pronouncement would be a tidier version of the
+fault it exists to correct.
 
 **One flake was pinned rather than re-run.** `the roster is one column on a phone`
 failed once, on the phone project, measuring a card's box before it was visible;
@@ -351,11 +357,14 @@ suite runs green afterwards.
   ticking it is only honest if the correction is visible, so each one carries
   its date and what it replaced.
 - **D1–D7** — pass, with D7 carrying the README exception the owner accepted.
-- **C26** — **open.** The judgement check is the owner's to make on the evidence
-  its row names, and the row was reworded during the review so that the evidence
-  does not depend on the hour the build ran.
+- **C26** — **passed.** Owner verdict, 2026-08-20, on the evidence its row
+  names, taken against the post-review build rather than the one the walk
+  produced. The row was reworded during the review so the evidence no longer
+  depends on the hour the build ran.
+- **Q3** — **answered**, 2026-08-20. The page title is a requirement now, with a
+  source, a decision record (D12) and a register entry.
 - **B8** — **open.** Pushing the branch alone produces no run; the pull request
   is what makes CI reachable.
-- **Q3** — **open**, and it is a requirement rather than a check.
 
-Phase 3 is not closed. It closes when C26 and B8 land and Q3 is answered.
+**Everything but B8 holds.** Phase 3 closes when CI goes green on the pull
+request.

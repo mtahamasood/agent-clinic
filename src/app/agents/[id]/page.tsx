@@ -51,7 +51,7 @@ export async function generateStaticParams() {
   return agents.map((agent) => ({ id: agent.id }));
 }
 
-// A title that names the patient rather than the app (D11).
+// A title that names the patient rather than the app (D12).
 export async function generateMetadata({
   params,
 }: PageProps<"/agents/[id]">): Promise<Metadata> {
