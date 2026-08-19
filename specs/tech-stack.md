@@ -139,6 +139,44 @@ Every phase in [roadmap.md](roadmap.md) is done only when all of these pass:
 - The Playwright suite passes at **both** viewports, phone and desktop
   ([Responsive design](#responsive-design)). A phase that put a page on screen
   and verified it at one width has not met this gate.
+- `CHANGELOG.md` carries an entry for the work ([Changelog](#changelog)).
+
+## Changelog
+
+`CHANGELOG.md` at the repo root records what changed, newest first, one heading
+per date. Entries describe units of work — a phase, a pull request — not
+commits, because a transcript of the branch is something the reader can already
+get from `git log`.
+
+**The rule.** A branch that changes `src/`, `specs/`, or `prisma/` updates
+`CHANGELOG.md` before it merges. Branches that only touch CI config, formatting,
+or the changelog itself are exempt: padding the file with entries nobody wants is
+how a changelog stops being read.
+
+**Enforcement**, because a rule that lives only in prose is not a gate:
+
+- `npm run check:changelog` compares the branch against its merge base and fails
+  when material paths changed and `CHANGELOG.md` did not. CI runs it inside the
+  required `verify` check. It fails loudly rather than skipping when it cannot
+  see enough history to answer — a check that passes blind is the C10 failure.
+- The check tests only that the file was **touched**. Whether the entry is true
+  or worth reading is a human's job, and the procedure is in
+  `.claude/skills/changelog`.
+- It is deliberately **not** part of `npm run check`. That script runs constantly
+  mid-branch, where the changelog is legitimately not written yet; a gate that
+  cries wolf during normal work gets routed around.
+
+**Skills carry procedure, never rules.** `.claude/skills/` is admitted as an
+agent-facing surface for this and for what follows it, on one condition: it holds
+*how*, and `specs/` holds *what* and *why*. A skill that starts asserting the
+product or the process must be some way has become an unattributed requirement on
+a surface nobody audits, which is the incident that produced
+[Requirement provenance](#requirement-provenance). The 2026-08-17 ban on
+`AGENTS.md` and `CLAUDE.md` is otherwise untouched, and `agentRules: false`
+stays in `next.config.ts`.
+
+*Source:* owner decision, 2026-08-19 — registered in
+[mission.md](mission.md#owner-decisions).
 
 ## Judgement checks
 

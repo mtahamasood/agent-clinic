@@ -19,6 +19,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          # check:changelog needs a merge base with the target branch. A shallow
+          # clone cannot provide one, and that check fails loudly rather than
+          # passing blind — so the history has to actually be here.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v7
         with:
@@ -40,6 +45,10 @@ jobs:
       # "Requirement provenance". Runs inside `verify` so branch protection
       # makes it binding: an unattributed requirement cannot reach main.
       - run: npm run check:provenance
+      # A branch that changed the product or the constitution also updates
+      # CHANGELOG.md — see specs/tech-stack.md, "Changelog". Inside `verify`, so
+      # branch protection makes it binding.
+      - run: npm run check:changelog
       - run: npm test
 
       - name: Install Playwright browser

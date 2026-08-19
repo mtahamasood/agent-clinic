@@ -16,3 +16,12 @@ Per [tech-stack.md → Requirement provenance](../specs/tech-stack.md#requiremen
       passes).
 - [ ] Nothing here widens scope beyond what the current phase's spec asks for;
       anything discovered mid-work went to the backlog or reopened the spec.
+
+## Changelog
+
+Per [tech-stack.md → Changelog](../specs/tech-stack.md#changelog):
+
+- [ ] `CHANGELOG.md` carries an entry for this work, under today's date, written
+      as a unit of work rather than a list of changed files. `npm run
+      check:changelog` tests that the file was touched; that it says something
+      true and worth reading is this checkbox.
