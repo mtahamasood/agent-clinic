@@ -17,7 +17,18 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // Two viewports, every spec, because specs/tech-stack.md "Responsive design"
+  // requires the layout to be verified at phone width rather than eyeballed.
+  // Both descriptors are Chromium-backed, so CI still installs one browser and
+  // the README's `npx playwright install chromium` stays correct.
+  //
+  // Cost accepted: the suite runs each spec twice. The build is not repeated —
+  // `webServer` starts once and both projects share it — so this costs test
+  // execution, not another `next build`.
+  projects: [
+    { name: "desktop", use: { ...devices["Desktop Chrome"] } }, // 1280x720
+    { name: "phone", use: { ...devices["Pixel 5"] } }, // 393x727, touch, mobile UA
+  ],
   webServer: {
     command: "npm run build && npm start",
     url: "http://localhost:3000",

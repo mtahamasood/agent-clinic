@@ -480,3 +480,37 @@ so the answer changed nothing that needed a source.
 
 Ambiguity found during implementation goes to the backlog or reopens this file,
 not into the code.
+
+## Amendments
+
+Constitution changes made **after this phase closed** that reach into code this
+phase still owns. They are recorded here rather than edited into the decisions
+and checks above: [validation.md](validation.md) is the record of a walk that
+actually happened, and inserting a check nobody ran — then ticking it — is the
+failure mode this project has already caught twice (C10 in this phase, C16 in
+Phase 1).
+
+### 2026-08-19 — the responsive-design convention
+
+The web UI follows responsive design: owner decision registered in
+[mission.md](../mission.md#owner-decisions), specified in
+[tech-stack.md](../tech-stack.md#responsive-design), and a standing quality gate
+from that date. It reaches this phase through D1 — the one page this phase put
+on screen, `/` with its notice-board `Card`.
+
+**Assessed, not assumed.** That page was already fluid and already mobile-first:
+the heading steps up at `sm:text-4xl` rather than down from a desktop size, the
+`Card` has no width of its own, and the prose wraps. No decision above changes,
+and D1's boundary — "`/` keeps its shape" — is intact.
+
+The gap was the same one Phase 0 had: nothing measured it. `tests/responsive.spec.ts`
+and the phone viewport in `playwright.config.ts` now do, and they run against
+this phase's page because it is the only page there is.
+
+Worth flagging for Phase 2, which owns the first layout that can genuinely
+break: a card **grid** is where fluid-by-default stops being free. D12's
+prerendering note and this one are the two findings from Phase 1 that a later
+phase has to read before it starts.
+
+No new C-numbered check is added. C1–C23 are closed, and the convention is
+inherited as a quality gate rather than restated per phase.

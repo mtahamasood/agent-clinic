@@ -49,6 +49,40 @@ tests/            # Playwright specs; unit tests sit next to their source
 **Server-first.** Components are Server Components by default. `"use client"` is
 opt-in, per component, and only when there is genuine interactivity.
 
+### Responsive design
+
+The web UI is responsive. Stated concretely, because a bar nobody can fail is
+not a bar:
+
+- **Fluid by default.** Containers cap their width with `max-w-*` and fill
+  what is left of the viewport below that. No element declares a fixed pixel
+  width the screen has to accommodate.
+- **Mobile-first.** The unprefixed Tailwind utility is the phone style; `sm:`
+  and upward add to it, never rescue it. Tailwind's default breakpoints are the
+  only set in the project — a bespoke breakpoint is a decision record with a
+  source, not a class name someone reached for.
+- **Nothing overflows sideways at 320px**, the narrowest viewport worth
+  supporting, and nothing is clipped or overlapped anywhere between 320px and a
+  wide desktop. Horizontal scroll is the failure this rule mostly exists to
+  catch.
+- **Verified in the Playwright pass**, at a phone viewport and a desktop one,
+  not by eye. Every spec runs twice — see the `projects` list in
+  `playwright.config.ts`. A responsive claim nobody measured is precisely the
+  hole that check C10 turned out to be.
+
+Deliberately **not** part of this convention: tap-target sizing, focus order,
+visible focus rings, and the rest of the mobile-usability family. They read like
+they belong here, which is the danger — they belong to the accessibility
+requirement struck on 2026-08-17, and they return only as a dated owner decision
+or a stakeholder ask (D10 in the Phase 0 spec). Adding one as a rider on this
+convention would repeat the incident that produced
+[Requirement provenance](#requirement-provenance).
+
+*Source:* owner decision, 2026-08-19 — registered in
+[mission.md](mission.md#owner-decisions). It supersedes the implied sourcing
+that previously carried "Responsive down to mobile" in the roadmap, which cited
+nothing and leaned on a success criterion whose wording was ambiguous.
+
 ## Deployment
 
 AgentClinic must be fully deployable **two ways**, and neither is the "real" one.
@@ -102,6 +136,9 @@ Every phase in [roadmap.md](roadmap.md) is done only when all of these pass:
 - The app builds and runs from a clean clone with documented commands.
 - The **production build** (`next build` + `next start`) runs locally against a
   local libSQL file — not just `next dev`.
+- The Playwright suite passes at **both** viewports, phone and desktop
+  ([Responsive design](#responsive-design)). A phase that put a page on screen
+  and verified it at one width has not met this gate.
 
 ## Judgement checks
 
