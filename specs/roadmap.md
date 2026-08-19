@@ -122,6 +122,12 @@ spec before implementation.
 - Server Action writes the `Appointment`; validation prevents double-booking the
   same slot and rejects past times.
 - Confirmation page, and the appointment appears on the agent's case file.
+- **Fix the seed's day-crossing collision.** `npm run seed` fails with `P2002` on
+  a database seeded on an earlier day: relative slots move, and today's
+  `dayOffset: 0` lands on the instant an earlier run wrote for `dayOffset: +3`.
+  It arrives here because the collision is with the slot-uniqueness constraints
+  this phase's validation is built on — owner decision, 2026-08-20, registered in
+  [mission.md](mission.md#owner-decisions).
 - **Pick a rendering strategy first.** Pages are prerendered at build time today,
   so a page that reads written data serves stale HTML until the next build —
   verified in Phase 1, recorded as

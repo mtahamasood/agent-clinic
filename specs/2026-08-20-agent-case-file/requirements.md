@@ -225,6 +225,12 @@ status code. The roadmap asked for an unknown agent to be handled in voice, and
 it is; the status code is a fact about the framework that Phase 8 inherits with
 the rest of the 404 question.
 
+*Put to the owner on 2026-08-20 with those three options, and **accepted as
+measured**.* No [mission.md](../mission.md#owner-decisions) entry: declining to
+spend scope installs nothing, and the clause the answer leaves standing — an
+unknown agent handled in voice — is the roadmap's own. What it does bind is
+Phase 8, which now inherits a measured number instead of a suspicion.
+
 *Rejected: a root `not-found.tsx` covering every unmatched URL.* It is four
 lines and it is a whole-site question — what the clinic says when you ask for a
 page it has never had — which is Phase 8's, with every route in view. This phase

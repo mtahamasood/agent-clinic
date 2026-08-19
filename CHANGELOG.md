@@ -44,6 +44,14 @@ Dates are the date the work landed on `main`.
     without it this phase would have quietly changed the rendering strategy that
     Phase 6 owns. The build now lists eight generated paths, and the walk reads
     that line rather than trusting the source.
+  - **A Phase 1 defect found and parked, not quietly patched.** `npm run seed`
+    fails on a database seeded on an earlier day — relative slots move, and
+    today's `dayOffset: 0` lands on the instant an earlier run wrote for
+    `dayOffset: +3`, colliding with `Appointment`'s slot uniqueness. A fresh
+    clone never reaches it, which is why three validation walks had not. Sent to
+    Phase 6, which writes appointments and has to reason about those constraints
+    anyway; the README's "safe to re-run" is knowingly left standing until the
+    fix makes it true.
   - **One new module, three new components, no new dependency and no new query.**
     `src/lib/clinic-date.ts` pins the date format so a Playwright assertion does
     not depend on the machine running it; `getAgent()` and `listAgents()` are
