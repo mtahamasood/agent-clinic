@@ -41,7 +41,9 @@ npm run dev         # http://localhost:3000
 | `npm run seed` | Seed the database — safe to re-run |
 | `npm test` | Unit tests (Vitest). Provisions and discards its own `clinic.test.db`, so it needs no setup and leaves your clinic alone |
 | `npm run test:e2e` | End-to-end tests (Playwright) — builds and starts the app itself |
-| `npm run check` | Typecheck, lint, format check, and unit tests |
+| `npm run check` | Typecheck, lint, format check, provenance, and unit tests |
+| `npm run check:provenance` | Every decision record in `specs/` names its source |
+| `npm run check:changelog` | This branch updated `CHANGELOG.md`, if it changed anything a reader would want in it |
 | `npm run typecheck` | `next typegen` then `tsc --noEmit` |
 | `npm run lint` | ESLint |
 | `npm run format` | Rewrite files with Prettier |
@@ -108,8 +110,10 @@ prisma/
   schema.prisma   the clinic's schema
   seed-data.ts    the clinic itself — patients, ailments, therapies, calendar
   seed.ts         the script that writes it
+scripts/          the checks CI runs — provenance and changelog
 specs/            the constitution, plus per-feature specs
 tests/            Playwright specs; unit tests sit next to their source
+.claude/skills/   procedure for coding agents; the rules live in specs/
 ```
 
 ## Input from stakeholders
