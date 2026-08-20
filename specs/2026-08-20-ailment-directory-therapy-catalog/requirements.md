@@ -567,5 +567,10 @@ test Phase 2's Q1 and Phase 3's Q1 used for whether a register entry is
 needed; if the owner's review turns either answer over, the correction lands
 in this file the way Phase 3's review corrections did.
 
+**Ratified, 2026-08-20:** the owner reviewed the pull request, approved C22,
+and ratified both flagged calls — the roster badges linking (D5) and the
+filter's shape (D4) stand as written, now on a signature rather than only on
+the sources they cited.
+
 Ambiguity found during implementation goes to the backlog or reopens this
 file, not into the code.

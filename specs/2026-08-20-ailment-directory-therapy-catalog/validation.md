@@ -107,7 +107,7 @@ Inherited by every phase from [tech-stack.md](../tech-stack.md#quality-gates).
 | # | Check | Passes when |
 | --- | --- | --- |
 | C21 | Six empty states render in voice | Each of D8's six, verified by a unit test that renders the component (or, for the two index pages, the page's list component) empty with the exact pinned copy — never by reading JSX (D8) |
-| C22 | Judgement: the reference reads as a reference | **Evidence:** the production build at a 393px viewport: `/ailments`, the Chronic Context Loss entry, `/therapies`, the Peer Review Circle entry, and `/therapies/for/tool-call-tremor`. **Procedure:** open all five, read each top to bottom, follow one cross-link from each. **Passes when** each entry reads as one thing described — the reader can say who presents with the condition and what treats it (or what a therapy involves and what it treats) without scrolling back up, the filter page is recognisably the catalog narrowed rather than a new kind of page, and nothing is clipped or crowded. A judgement, not a measurement — recorded with who made it and when |
+| C22 | Judgement: the reference reads as a reference | **Evidence:** the production build at a 393px viewport: `/ailments`, the Chronic Context Loss entry, `/therapies`, the Peer Review Circle entry, and `/therapies/for/tool-call-tremor`. **Procedure:** open all five, read each top to bottom, follow one cross-link from each. **Passes when** each entry reads as one thing described — the reader can say who presents with the condition and what treats it (or what a therapy involves and what it treats) without scrolling back up, the filter page is recognisably the catalog narrowed rather than a new kind of page, and nothing is clipped or crowded. A judgement, not a measurement — recorded with who made it and when. **Passed** — owner verdict, 2026-08-20, taken against the production build of this branch served locally, on the five pages this row names |
 | C23 | Header nav is complete and wraps | Patients, Ailments, Therapies all reachable from the banner on every route, and at 320px every banner link respects the container's gutters, the nav taking a second line to do it. **The sweep cannot hold this row** — established by mutation on 2026-08-20: with `flex-wrap` removed the nav shrinks into the gutter (last label at 314px against the 296px line) without ever scrolling the document, and the sweep stays green — so the suite carries a dedicated gutter check, itself proven by the same mutation both ways (D9) |
 | C24 | Titles name the pages | All five new routes and both misses, per D10, asserted in the new specs |
 | C25 | Landmarks hold on every new route | Exactly one `<h1>`; `banner`, `main`, `contentinfo` from the root layout |
@@ -243,8 +243,11 @@ purpose, watched going red, and restored:
   command; no `"use client"`, no third primitive, no bespoke breakpoint, no
   deploy branching, no write path; D7 carries the standing seed exception the
   2026-08-20 owner decision accepts.
-- **C22** — **awaiting the owner's verdict** on the evidence its row names.
-  The one row this branch cannot tick itself, flagged in the pull request.
+- **C22** — **passed.** Owner verdict, 2026-08-20, on the evidence its row
+  names, against the production build served from this branch. The owner also
+  ratified the two calls the spec's open-questions note flagged — the roster
+  badges linking (D5) and the filter's shape as a route family (D4) — so both
+  stand as written.
 - **B8** — **passed.** Green on pull request
   [#17](https://github.com/mtahamasood/agent-clinic/pull/17), run
   [32315931204](https://github.com/mtahamasood/agent-clinic/actions/runs/32315931204),
@@ -254,5 +257,6 @@ purpose, watched going red, and restored:
   green: the one named above proved the code, the one after it proves this
   sentence did no harm.
 
-No condition in section E holds. The phase closes when C22 carries the
-owner's verdict.
+**Everything holds.** A1–A10, B1–B8, C1–C29, and D1–D7 all pass, and no
+condition in section E does. Phase 4+5 is closed on merge, with the branch
+kept.
