@@ -245,7 +245,14 @@ purpose, watched going red, and restored:
   2026-08-20 owner decision accepts.
 - **C22** — **awaiting the owner's verdict** on the evidence its row names.
   The one row this branch cannot tick itself, flagged in the pull request.
-- **B8** — awaiting the pull request's CI run; recorded there.
+- **B8** — **passed.** Green on pull request
+  [#17](https://github.com/mtahamasood/agent-clinic/pull/17), run
+  [32315931204](https://github.com/mtahamasood/agent-clinic/actions/runs/32315931204),
+  in **1m33s** — inside the ten-minute job cap, with
+  `playwright install chromium` behaving as the 2026-08-19 decisions intend.
+  The commit carrying this paragraph triggers one more run, which must also be
+  green: the one named above proved the code, the one after it proves this
+  sentence did no harm.
 
 No condition in section E holds. The phase closes when C22 carries the
-owner's verdict and B8 is green on the pull request.
+owner's verdict.
