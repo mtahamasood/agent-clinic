@@ -29,7 +29,7 @@ working directory. Run it in a **fresh clone in a new directory**.
 | A6 | `npm run seed` | Populates the full clinic (the day-crossing defect stands, per the 2026-08-20 owner decision — Phase 6+7's to fix; a fresh clone does not reach it) |
 | A7 | `npm run dev` | The directory, the catalog, an entry of each, and the filter all render seed data; roster and case files carry their new links |
 | A8 | Stop dev; `npm run build && npm start` | Same content from the production build. The build table lists `/ailments/[id]` with **8** paths, `/therapies/[id]` with **6**, and `/therapies/for/[ailment]` with **8**, all prerendered (C3) |
-| A9 | On the production build, request `/ailments/not-an-ailment` and `/therapies/not-a-therapy` | Both render their in-voice copy inside the clinic's landmarks. **Record the HTTP status each carried** — Phase 3 measured 200 on this configuration; a different number here is a finding (D7) |
+| A9 | On the production build, request `/ailments/not-an-ailment` and `/therapies/not-a-therapy` | Both render their in-voice copy inside the clinic's landmarks. **Record the HTTP status each carried** — Phase 3 measured 200 on this configuration; a different number here is a finding (D7). **Measured 2026-08-20: 404, on both, and on the filter route's miss too** — the finding is in D7 and the Result below |
 | A10 | Disconnect the network, repeat A8 | Still works; install remains the only step that touches the registry |
 
 A8's build table is not a formality, for the reason Phase 3 recorded: a
@@ -77,7 +77,7 @@ Inherited by every phase from [tech-stack.md](../tech-stack.md#quality-gates).
 | C4 | No new data access | `git diff main -- src/server/` is empty (D1) |
 | C5 | Severity is the patient's own | On Chronic Context Loss: Atlas reads Severe, Wren Moderate, Nim Mild — each scoped to its own row, because three right words against three wrong patients would satisfy an unscoped assertion (D2) |
 | C6 | Patients read alphabetically | Atlas, Nim, Wren — the seeded order of arrival is 52/14/1 days ago, so query order (insertion) differs from rendered order and the sort is observable (D2) |
-| C7 | The misses read in voice | `/ailments/not-an-ailment` and `/therapies/not-a-therapy` render their D7 copy inside the root layout's landmarks, on the production build, status recorded in A9 |
+| C7 | The misses read in voice | `/ailments/not-an-ailment` and `/therapies/not-a-therapy` render their D7 copy inside the root layout's landmarks, on the production build. **Measured 2026-08-20: both carry HTTP 404** — in voice *and* the right status, unlike the patient miss they were expected to match (D7) |
 
 ### The catalog and the filter
 
@@ -182,4 +182,70 @@ version. Merge with the branch **kept**, per
 
 ## Result
 
-*To be completed by the validation walk.*
+**Walked 2026-08-20 on Linux 6.18 (WSL2), Node v22, in a fresh clone of this
+branch under the session scratchpad.** Every server started during the walk
+was a tracked task wrapped so the process group dies with it
+(`.claude/skills/local-server`), each stop was verified with `ss` and `pgrep`,
+and nothing was stranded or pattern-killed.
+
+### The walk
+
+- **A2** `npm install` — clean, 848 packages in 39s, no prompt. (A first
+  attempt at the walk raced two installs in one directory and corrupted
+  `node_modules`; the clone was discarded and re-made rather than repaired,
+  which is what a clean-clone check is for.)
+- **A3** `.env.example` unchanged since Phase 0.
+- **A4** `npm test` on the bare clone — **70 passed**, `clinic.db` uncreated.
+- **A5** `npm run migrate` — applied; no new migration on the branch.
+- **A6** `npm run seed` — 8 patients, 8 ailments, 6 therapies, 3 on today's
+  calendar.
+- **A8** `npm run build && npm start` — the build table lists `/ailments` and
+  `/therapies` as static and the three dynamic segments as SSG with **8, 6,
+  and 8** generated paths (C3, D5). The served pages carry seed data through
+  every relation: the Chronic Context Loss entry names its symptoms in
+  position order, Atlas/Nim/Wren each with their own severity variant, and
+  Context Window Hygiene at 45 minutes under Treated by; the case file's
+  diagnosis links carry `href="/ailments/…"`.
+- **A9** — the finding of the walk, recorded in D7: all three new misses
+  return **HTTP 404** with their in-voice copy (`x-nextjs-prerender: 1`,
+  cached, ~8.6KB non-streamed captures), while `/agents/not-a-patient` on the
+  same build still returns its accepted **200** (a 20.8KB streamed-shell
+  capture). `/no-such-route` still returns Next's default 404.
+- **A7** `npm run dev` — all eight new-and-old routes spot-checked 200 with
+  database content.
+- **A10** — cold offline build in an `unshare -rn` namespace, offline proven
+  first (`curl https://registry.npmjs.org` failed inside), `rm -rf .next`
+  before the build. Built, served every checked route from the database, and
+  returned the same status measurements as the online run.
+
+### Checks seen to fail
+
+Per the standing Phase 3 lesson, the load-bearing new checks were broken on
+purpose, watched going red, and restored:
+
+| Check | The mutation | Result |
+| --- | --- | --- |
+| C6, patients read alphabetically | delete the sort from `PresentingPatients` | red, then green restored |
+| C11, the filter excludes | render `listTherapies()` on the filter route | red on the exclusion assertion, then green |
+| C23, the header wrap | remove `flex-wrap` from the header | **the sweep stayed green** — the finding that rewrote D9 and this row: the unwrapped nav shrinks into the gutter (last label at 314px against the 296px line) without scrolling the document. A dedicated gutter check was added and proven both ways: red without the wrap, green with it |
+
+### Where it stands
+
+- **A1–A10** — pass, as recorded above.
+- **B1–B7** — pass. `npm run check` green: typecheck, ESLint, Prettier,
+  provenance, **70 unit tests**. `npm run test:e2e` green against the
+  production build: **202 tests, both viewports**, run in full after the last
+  code change.
+- **C1–C21, C23–C29** — pass, with C7 and C23 carrying their measured
+  corrections in the rows themselves.
+- **D1–D7** — pass: `git diff main` over `src/server/`, `prisma/`,
+  `src/app/page.tsx`, `package.json`, and `package-lock.json` is empty in one
+  command; no `"use client"`, no third primitive, no bespoke breakpoint, no
+  deploy branching, no write path; D7 carries the standing seed exception the
+  2026-08-20 owner decision accepts.
+- **C22** — **awaiting the owner's verdict** on the evidence its row names.
+  The one row this branch cannot tick itself, flagged in the pull request.
+- **B8** — awaiting the pull request's CI run; recorded there.
+
+No condition in section E holds. The phase closes when C22 carries the
+owner's verdict and B8 is green on the pull request.

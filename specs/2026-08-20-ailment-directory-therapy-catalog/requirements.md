@@ -353,9 +353,22 @@ patient in voice, would be the coat of paint failing exactly where
 *The status code is inherited as measured, not re-litigated.* Phase 3
 measured HTTP 200 on a segment-level not-found under this exact configuration,
 the owner accepted it, and Phase 8 owns the settlement. These routes add
-themselves to what Phase 8 inherits; the walk re-measures one of them (A9) so
-the record covers the new segments, and a *different* number would be a
-finding, not a pass.
+themselves to what Phase 8 inherits; the walk re-measures them (A9), and a
+*different* number would be a finding, not a pass.
+
+*Measured on 2026-08-20, and it was a finding — the inheritance is better
+than predicted.* On the production build, `/ailments/not-an-ailment`,
+`/therapies/not-a-therapy`, and `/therapies/for/not-an-ailment` all return
+**HTTP 404** carrying their in-voice copy — the right status and the voice
+together — while `/agents/not-a-patient` on the same build still returns its
+accepted 200. Next's rule is 200 when the response streams and 404 when it
+does not, and the captures agree with it: the patient miss is a 20.8KB
+streamed-shell capture, the three new misses are ~8.6KB non-streamed
+documents. Why one segment streams its miss and three shaped the same way do
+not is deliberately not settled here. What changes hands is that Phase 8 now
+inherits measured numbers on all four misses — one wrong status under good
+copy, three right statuses under good copy, and Next's default on an
+unmatched URL — instead of one measurement and an assumption of symmetry.
 
 *Boundary:* a message, not a search. No "did you mean", no directory embedded
 in the 404. The header now carries three ways onward.

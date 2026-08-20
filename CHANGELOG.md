@@ -33,9 +33,12 @@ Dates are the date the work landed on `main`.
   - **`src/server/` is unchanged across five new routes.** The MVP compression
     merged Phases 4 and 5 on the claim that the queries had been carried since
     Phase 1; the claim held — `git diff main -- src/server/` is empty.
-  - **Unknown ailments and therapies answer in voice**, segment-scoped like
-    Phase 3's unknown patient, with the whole-site 404 question still parked
-    in Phase 8.
+  - **Unknown ailments and therapies answer in voice — and, measured on the
+    walk, with correct 404s.** The new misses do not stream, so they escape
+    the HTTP 200 that Phase 3 measured (and the owner accepted) on the
+    patient miss, which still carries it on the same build. Phase 8 now
+    inherits measured numbers on all four misses instead of one measurement
+    and an assumed symmetry.
 
 - **The roadmap compresses for an MVP push.** All three stakeholders asked for
   an MVP quickly — commercial signals indicate urgency to go to market — so the
