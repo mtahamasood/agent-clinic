@@ -21,7 +21,16 @@ import { expect, test } from "@playwright/test";
 // forgets is a phase whose layout is unmeasured. The case file is a seeded id
 // rather than a placeholder — `atlas` is hand-written in prisma/seed-data.ts
 // precisely so it can be named in a URL.
-const ROUTES = ["/", "/agents", "/agents/atlas"];
+const ROUTES = [
+  "/",
+  "/agents",
+  "/agents/atlas",
+  "/ailments",
+  "/ailments/chronic-context-loss",
+  "/therapies",
+  "/therapies/peer-review-circle",
+  "/therapies/for/tool-call-tremor",
+];
 
 // 320px is the narrowest viewport the convention supports; 1536px is a wide
 // desktop. The middle values sit either side of Tailwind's `sm` and `lg`
@@ -138,6 +147,49 @@ for (const route of ROUTES) {
     }).toPass({ timeout: 15_000 });
   });
 }
+
+/**
+ * The header's wrap (Phase 4+5's D9), measured where it can actually fail.
+ *
+ * The overflow sweep above cannot hold this one, and that was established by
+ * mutation rather than assumed: with `flex-wrap` removed, the nav overruns the
+ * right gutter by ~18px at 320px but stays inside the viewport — masthead and
+ * three labels need ~338px of row where 320 exists — so the document never
+ * scrolls and the sweep stays green. What the wrap buys is the gutter: every
+ * link in the banner respects the container's `px-6`, taking a second line
+ * instead of spilling. So the gutter is what this asserts, at the width where
+ * the wrap engages and at a desktop width where it must not.
+ */
+test("the header's links respect the gutters at 320px and share a line at 1280px", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.goto("/");
+
+  const links = page.getByRole("banner").getByRole("link");
+  await expect(links).toHaveCount(4);
+  for (let i = 0; i < 4; i++) {
+    const box = await links.nth(i).boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(23.5);
+    expect(
+      box!.x + box!.width,
+      `banner link ${i} runs to ${box!.x + box!.width}px past the 296px gutter line`,
+    ).toBeLessThanOrEqual(296.5);
+  }
+
+  // On a desktop width the wrap must not engage: masthead and nav share one
+  // line, or the wrap has become the layout rather than the escape hatch.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/");
+  const ys = [];
+  for (let i = 0; i < 4; i++) {
+    const box = await links.nth(i).boundingBox();
+    expect(box).not.toBeNull();
+    ys.push(box!.y);
+  }
+  expect(new Set(ys.map((y) => Math.round(y))).size).toBe(1);
+});
 
 /**
  * The roster grid, which is the specific thing Phase 2 can get wrong (C17).

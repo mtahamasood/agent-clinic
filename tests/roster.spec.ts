@@ -50,23 +50,24 @@ test("the roster carries no severities and no intake notes", async ({
 });
 
 /**
- * The cards link through, and nothing else on the page does.
+ * The cards and the badges both link through, and nothing else on the page
+ * does.
  *
- * This assertion said "no links at all" for one phase, which was correct while
- * `/agents/[id]` did not exist. Phase 3 built it, so the rule it enforces —
- * Phase 0's D5, no link to a route that does not exist — now points the other
- * way for cards and still points the same way for badges: `/ailments/[id]` is
- * Phase 4. Rewritten rather than deleted, because deleting it would drop the
- * half that is still live.
+ * Third rewrite of this assertion, tracking Phase 0's D5 as routes arrive: "no
+ * links at all" while nothing existed, "cards yes, badges no" while
+ * `/ailments/[id]` was still Phase 4's, and now both — a badge is the same
+ * fact as a case file's diagnosis row, and its ailment has a page (Phase
+ * 4+5's D5). The nothing-else-links half is still the live rule.
  */
-test("each card links to its patient's file, and the badges link nowhere", async ({
+test("each card links to its patient's file and each badge to its ailment's entry", async ({
   page,
 }) => {
   await page.goto("/agents");
 
-  // One link per patient, and no more: eight cards, eight links (D5).
+  // Eight card titles plus eighteen seeded diagnoses, and not one link more:
+  // anything else linking on this page is unauthorised (D5).
   const links = page.getByRole("main").getByRole("link");
-  await expect(links).toHaveCount(8);
+  await expect(links).toHaveCount(26);
 
   const atlas = page
     .locator("li", { has: page.getByText("Atlas", { exact: true }) })
@@ -76,11 +77,14 @@ test("each card links to its patient's file, and the badges link nowhere", async
     "/agents/atlas",
   );
 
-  // The badges are still text. A link inside one would point at a route Phase 4
-  // has not built.
+  // The badge itself is the link — `asChild` renders the anchor in the badge's
+  // shape — and it points at its own ailment, not a neighbour's.
   await expect(
-    page.getByRole("main").locator("[data-slot='badge'] a"),
-  ).toHaveCount(0);
+    atlas.getByRole("link", { name: "Chronic Context Loss" }),
+  ).toHaveAttribute("href", "/ailments/chronic-context-loss");
+  await expect(
+    page.getByRole("main").locator("a[data-slot='badge']"),
+  ).toHaveCount(18);
 });
 
 /**

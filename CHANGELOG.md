@@ -13,6 +13,33 @@ Dates are the date the work landed on `main`.
 
 ## 2026-08-20
 
+- **Phase 4+5 — the ailment directory and the therapy catalog, cross-linked.**
+  `/ailments` lists every condition and `/ailments/[id]` gives each one its
+  clinical write-up: symptoms in order, who presents with it (with each
+  patient's own severity), and what treats it. `/therapies` and
+  `/therapies/[id]` do the same for the treatments — summary, duration, what
+  the session involves, what it treats. Every noun's name everywhere becomes a
+  link: case-file ailments and therapies, roster badges, and both directions
+  between the two new halves. The header gains **Ailments** and **Therapies**
+  and its nav learns to wrap at phone widths — the register entry's own
+  "stops fitting at 320px" clause, arrived.
+  - **The filter is eight prerendered pages, not a query string.**
+    `/therapies/for/[ailment]` renders the catalog narrowed to one condition,
+    one static page per seeded ailment. Reading `searchParams` would have
+    silently moved the project onto request-time rendering — the decision
+    Phase 6+7 owns — so the filter is links, and the rendering strategy is
+    untouched. It is also the first caller of `listTherapiesForAilment()`,
+    the query Phase 1 wrote for this page three phases ago.
+  - **`src/server/` is unchanged across five new routes.** The MVP compression
+    merged Phases 4 and 5 on the claim that the queries had been carried since
+    Phase 1; the claim held — `git diff main -- src/server/` is empty.
+  - **Unknown ailments and therapies answer in voice — and, measured on the
+    walk, with correct 404s.** The new misses do not stream, so they escape
+    the HTTP 200 that Phase 3 measured (and the owner accepted) on the
+    patient miss, which still carries it on the same build. Phase 8 now
+    inherits measured numbers on all four misses instead of one measurement
+    and an assumed symmetry.
+
 - **The roadmap compresses for an MVP push.** All three stakeholders asked for
   an MVP quickly — commercial signals indicate urgency to go to market — so the
   five remaining phases become three. Phases 4 and 5 merge: two read-only

@@ -1,0 +1,262 @@
+# Validation — Ailment directory & therapy catalog
+
+How we know **Phase 4+5** is done. Every check below is binary. A phase is
+done or it isn't — no "mostly".
+
+Scope is in [requirements.md](requirements.md); the work is in
+[plan.md](plan.md).
+
+The standing lesson from Phase 3 applies to every row here: a check is not
+finished when it is written, it is finished when it has been seen to fail.
+New checks whose failure is cheap to stage are staged (the mutation named in
+the row); the rest lean on assertions that name seeded relationships, which a
+deleted feature cannot satisfy.
+
+---
+
+## A. The clean-clone run
+
+Same discipline as every phase, still the check most easily faked by a warm
+working directory. Run it in a **fresh clone in a new directory**.
+
+| # | Step | Passes when |
+| --- | --- | --- |
+| A1 | `git clone <repo> && cd` into it | — |
+| A2 | `npm install` | Completes with no manual step and no prompt |
+| A3 | Copy `.env.example` to `.env` | Unchanged since Phase 0 |
+| A4 | `npm test` before anything else | Passes on a bare clone; still leaves `clinic.db` uncreated |
+| A5 | `npm run migrate` | Applies cleanly. **No new migration this phase** — `prisma/migrations/` is byte-identical to `main` |
+| A6 | `npm run seed` | Populates the full clinic (the day-crossing defect stands, per the 2026-08-20 owner decision — Phase 6+7's to fix; a fresh clone does not reach it) |
+| A7 | `npm run dev` | The directory, the catalog, an entry of each, and the filter all render seed data; roster and case files carry their new links |
+| A8 | Stop dev; `npm run build && npm start` | Same content from the production build. The build table lists `/ailments/[id]` with **8** paths, `/therapies/[id]` with **6**, and `/therapies/for/[ailment]` with **8**, all prerendered (C3) |
+| A9 | On the production build, request `/ailments/not-an-ailment` and `/therapies/not-a-therapy` | Both render their in-voice copy inside the clinic's landmarks. **Record the HTTP status each carried** — Phase 3 measured 200 on this configuration; a different number here is a finding (D7). **Measured 2026-08-20: 404, on both, and on the filter route's miss too** — the finding is in D7 and the Result below |
+| A10 | Disconnect the network, repeat A8 | Still works; install remains the only step that touches the registry |
+
+A8's build table is not a formality, for the reason Phase 3 recorded: a
+dynamic segment that loses `generateStaticParams()` does not fail, it silently
+starts rendering on demand, and the table is the only place that shows it —
+now on three segments instead of one.
+
+Reproduce A10 on Linux in a network namespace with only loopback, confirming
+the namespace is offline **first** (`curl https://registry.npmjs.org` inside
+it must fail) and `rm -rf .next` before the build. Servers start as tracked
+tasks wrapped so the process group dies with the task, per
+`.claude/skills/local-server`; a stranded process is the failure the recipe
+exists to prevent. Assert on content the database put there — a therapy's
+duration on its entry, a patient's name on an ailment's page — not on element
+counts.
+
+---
+
+## B. Quality gates
+
+Inherited by every phase from [tech-stack.md](../tech-stack.md#quality-gates).
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| B1 | `npm run typecheck` | Clean; every new component's prop type is derived from a query's return type, none hand-written |
+| B2 | ESLint | Clean |
+| B3 | `prettier --check .` | Clean |
+| B4 | Vitest | Every unit test passes, including both branches of all four new list components and the severity badge |
+| B5 | Playwright | The whole suite passes against the production build at **both** viewports — every earlier phase's specs plus this phase's |
+| B6 | `npm run check:provenance` | Every decision record in this spec names its source |
+| B7 | `npm run check:changelog` | This branch touched `specs/` and `src/`, and `CHANGELOG.md` with them |
+| B8 | CI | A green run on the pull request, executing B1–B7 |
+
+---
+
+## C. Phase-specific correctness
+
+### The directory
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| C1 | Every ailment has an entry | All eight seeded ids open a page carrying that ailment's own description — checked across all eight, since the cross-link exit criterion is any-ailment, not the one a test picked |
+| C2 | The entry is complete | Name, summary, description, symptoms in seeded `position` order, patients presenting, treated by (D2) |
+| C3 | All five routes prerender | The build table: `/ailments` and `/therapies` static; the three dynamic segments SSG with 8, 6, and 8 paths. Read from the build output, not inferred (D6) |
+| C4 | No new data access | `git diff main -- src/server/` is empty (D1) |
+| C5 | Severity is the patient's own | On Chronic Context Loss: Atlas reads Severe, Wren Moderate, Nim Mild — each scoped to its own row, because three right words against three wrong patients would satisfy an unscoped assertion (D2) |
+| C6 | Patients read alphabetically | Atlas, Nim, Wren — the seeded order of arrival is 52/14/1 days ago, so query order (insertion) differs from rendered order and the sort is observable (D2) |
+| C7 | The misses read in voice | `/ailments/not-an-ailment` and `/therapies/not-a-therapy` render their D7 copy inside the root layout's landmarks, on the production build. **Measured 2026-08-20: both carry HTTP 404** — in voice *and* the right status, unlike the patient miss they were expected to match (D7) |
+
+### The catalog and the filter
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| C8 | Every therapy has an entry | All six seeded ids open a page carrying that therapy's description and duration |
+| C9 | The entry is complete | Name, summary, duration as "{n} minutes", description, treated ailments with summaries (D3) |
+| C10 | The filter row is complete | `/therapies` lists all eight ailments as links to their filtered pages (D4) |
+| C11 | The filter filters | `/therapies/for/tool-call-tremor` lists Exponential Backoff Breathing and Structured Output Conditioning **and none of the other four** — the exclusion is the feature; an assertion without it passes on an unfiltered copy of the catalog (D4) |
+| C12 | The filter is complete | For each of the eight ailments, the filtered page lists exactly the therapies whose seed `treats` names it — the docstring's "returning everything, not the first few" claim, checked against the seed rather than the query (D1, D4) |
+| C13 | The filtered miss is the ailment's | `/therapies/for/not-an-ailment` renders the *ailment* 404 copy, not the therapy one (D7) |
+
+### The cross-links
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| C14 | Case file → directory | A diagnosis row's ailment name links to that ailment's entry, and clicking it lands there (D5) |
+| C15 | Case file → catalog | An appointment row's therapy name links to that therapy's entry (D5) |
+| C16 | Roster → directory | Every badge links to its own ailment's entry; card titles still link to patients; the count of links in `<main>` equals cards plus badges, so nothing else linked (D5) |
+| C17 | Directory → case files and catalog | An ailment entry's patient names reach case files and its therapy names reach the catalog, by clicking (D2, D5) |
+| C18 | Catalog → directory | A therapy entry's ailment names reach the directory (D3, D5) |
+| C19 | No dead links | Every link in the repo resolves to a route that exists — Phase 0's D5, five phases running, now pointing every direction it can |
+| C20 | Prose stays prose | No link inside a description, intake note, or clinical aside (D5's boundary) |
+
+### The states and the chrome
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| C21 | Six empty states render in voice | Each of D8's six, verified by a unit test that renders the component (or, for the two index pages, the page's list component) empty with the exact pinned copy — never by reading JSX (D8) |
+| C22 | Judgement: the reference reads as a reference | **Evidence:** the production build at a 393px viewport: `/ailments`, the Chronic Context Loss entry, `/therapies`, the Peer Review Circle entry, and `/therapies/for/tool-call-tremor`. **Procedure:** open all five, read each top to bottom, follow one cross-link from each. **Passes when** each entry reads as one thing described — the reader can say who presents with the condition and what treats it (or what a therapy involves and what it treats) without scrolling back up, the filter page is recognisably the catalog narrowed rather than a new kind of page, and nothing is clipped or crowded. A judgement, not a measurement — recorded with who made it and when. **Passed** — owner verdict, 2026-08-20, taken against the production build of this branch served locally, on the five pages this row names |
+| C23 | Header nav is complete and wraps | Patients, Ailments, Therapies all reachable from the banner on every route, and at 320px every banner link respects the container's gutters, the nav taking a second line to do it. **The sweep cannot hold this row** — established by mutation on 2026-08-20: with `flex-wrap` removed the nav shrinks into the gutter (last label at 314px against the 296px line) without ever scrolling the document, and the sweep stays green — so the suite carries a dedicated gutter check, itself proven by the same mutation both ways (D9) |
+| C24 | Titles name the pages | All five new routes and both misses, per D10, asserted in the new specs |
+| C25 | Landmarks hold on every new route | Exactly one `<h1>`; `banner`, `main`, `contentinfo` from the root layout |
+| C26 | Still a Server Component | No `"use client"` anywhere in the repo |
+| C27 | No primitive was added | `src/components/ui/` still holds exactly `card.tsx` and `badge.tsx`; the linked badges use the `asChild` the primitive already ships (D12) |
+
+### Responsive
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| C28 | No sideways overflow | The width sweep passes at 320, 480, 640, 1024, and 1536px on all five new routes as well as the existing three (plan 6.6). It does **not** measure D9's wrap — C23 records why, and carries the check that does |
+| C29 | No bespoke breakpoint | The Phase 2 grep for breakpoint prefixes and fixed widths still returns nothing outside `ui/` |
+
+C22 is the human half of the exit criterion, written to the
+[judgement-check rule](../tech-stack.md#judgement-checks): evidence, procedure,
+pass condition, and a recorded verdict.
+
+---
+
+## D. Parity and constraints
+
+| # | Check | Passes when |
+| --- | --- | --- |
+| D1 | No deploy-target branching | The Phase 2 grep still returns nothing meaningful |
+| D2 | No runtime filesystem writes | Nothing outside Prisma writes at request time |
+| D3 | No new dependency | `dependencies`, `devDependencies`, `package-lock.json` unchanged; no script changed either, this phase |
+| D4 | No schema change | `prisma/schema.prisma` and `prisma/migrations/` byte-identical to `main` |
+| D5 | Rendering strategy unchanged | Every route prerenders; no `dynamic`, no `revalidate`, no `no-store`, no `dynamicParams` export, and **no `searchParams` read anywhere** — the last is this phase's specific temptation and D4 says why it is refused |
+| D6 | Nothing writes | No Server Action, no form, no mutation. Booking is next phase |
+| D7 | README honesty | Every command in the README ran during A1–A10 as documented, with the standing seed exception the 2026-08-20 owner decision accepts |
+
+---
+
+## E. Not-done conditions
+
+Explicit disqualifiers. Any one of these means the phase is not finished,
+regardless of how green the tests are.
+
+- A booking affordance appeared — a button, a form, a Server Action, or a
+  Server Action import.
+- `/` changed at all: `git diff main -- src/app/page.tsx` is non-empty.
+- `searchParams` is read anywhere, or any route renders on demand.
+- A site-wide `not-found.tsx` landed — the misses here are segment-scoped,
+  like Phase 3's; the whole-site page is Phase 8's.
+- The filter page for any ailment omits a therapy whose seed `treats` names
+  that ailment, or C11's exclusion half is missing from the suite.
+- A link points into prose, or any noun's name on the new pages is dead text.
+- The roster's link test was deleted rather than rewritten, or its
+  nothing-else-links half was dropped.
+- A third shadcn primitive, any dependency, or any schema change arrived.
+- A bespoke breakpoint, a fixed pixel width, or a header treatment beyond
+  `flex-wrap` entered the styling.
+- The responsive sweep does not visit all five new routes.
+- Any empty state is ticked by reading JSX rather than rendering it, or its
+  rendered copy differs from D8's pinned string.
+- A docstring still gives "Phase 4" or "Phase 5" as the reason a name is not
+  a link (plan 5.1–5.4 name the four).
+- `"use client"` appears anywhere.
+- A design pass happened.
+- `strict: true` is off, or an `any` is uncommented.
+
+---
+
+## Merge criteria
+
+Merge when **A1–A10, B1–B8, C1–C29, and D1–D7 all pass, and no condition in E
+holds** — C22 with the owner's recorded verdict.
+
+Record section A's result in the PR description, with the machine and Node
+version. Merge with the branch **kept**, per
+[branch retention](../tech-stack.md#branch-retention).
+
+## Result
+
+**Walked 2026-08-20 on Linux 6.18 (WSL2), Node v22, in a fresh clone of this
+branch under the session scratchpad.** Every server started during the walk
+was a tracked task wrapped so the process group dies with it
+(`.claude/skills/local-server`), each stop was verified with `ss` and `pgrep`,
+and nothing was stranded or pattern-killed.
+
+### The walk
+
+- **A2** `npm install` — clean, 848 packages in 39s, no prompt. (A first
+  attempt at the walk raced two installs in one directory and corrupted
+  `node_modules`; the clone was discarded and re-made rather than repaired,
+  which is what a clean-clone check is for.)
+- **A3** `.env.example` unchanged since Phase 0.
+- **A4** `npm test` on the bare clone — **70 passed**, `clinic.db` uncreated.
+- **A5** `npm run migrate` — applied; no new migration on the branch.
+- **A6** `npm run seed` — 8 patients, 8 ailments, 6 therapies, 3 on today's
+  calendar.
+- **A8** `npm run build && npm start` — the build table lists `/ailments` and
+  `/therapies` as static and the three dynamic segments as SSG with **8, 6,
+  and 8** generated paths (C3, D5). The served pages carry seed data through
+  every relation: the Chronic Context Loss entry names its symptoms in
+  position order, Atlas/Nim/Wren each with their own severity variant, and
+  Context Window Hygiene at 45 minutes under Treated by; the case file's
+  diagnosis links carry `href="/ailments/…"`.
+- **A9** — the finding of the walk, recorded in D7: all three new misses
+  return **HTTP 404** with their in-voice copy (`x-nextjs-prerender: 1`,
+  cached, ~8.6KB non-streamed captures), while `/agents/not-a-patient` on the
+  same build still returns its accepted **200** (a 20.8KB streamed-shell
+  capture). `/no-such-route` still returns Next's default 404.
+- **A7** `npm run dev` — all eight new-and-old routes spot-checked 200 with
+  database content.
+- **A10** — cold offline build in an `unshare -rn` namespace, offline proven
+  first (`curl https://registry.npmjs.org` failed inside), `rm -rf .next`
+  before the build. Built, served every checked route from the database, and
+  returned the same status measurements as the online run.
+
+### Checks seen to fail
+
+Per the standing Phase 3 lesson, the load-bearing new checks were broken on
+purpose, watched going red, and restored:
+
+| Check | The mutation | Result |
+| --- | --- | --- |
+| C6, patients read alphabetically | delete the sort from `PresentingPatients` | red, then green restored |
+| C11, the filter excludes | render `listTherapies()` on the filter route | red on the exclusion assertion, then green |
+| C23, the header wrap | remove `flex-wrap` from the header | **the sweep stayed green** — the finding that rewrote D9 and this row: the unwrapped nav shrinks into the gutter (last label at 314px against the 296px line) without scrolling the document. A dedicated gutter check was added and proven both ways: red without the wrap, green with it |
+
+### Where it stands
+
+- **A1–A10** — pass, as recorded above.
+- **B1–B7** — pass. `npm run check` green: typecheck, ESLint, Prettier,
+  provenance, **70 unit tests**. `npm run test:e2e` green against the
+  production build: **202 tests, both viewports**, run in full after the last
+  code change.
+- **C1–C21, C23–C29** — pass, with C7 and C23 carrying their measured
+  corrections in the rows themselves.
+- **D1–D7** — pass: `git diff main` over `src/server/`, `prisma/`,
+  `src/app/page.tsx`, `package.json`, and `package-lock.json` is empty in one
+  command; no `"use client"`, no third primitive, no bespoke breakpoint, no
+  deploy branching, no write path; D7 carries the standing seed exception the
+  2026-08-20 owner decision accepts.
+- **C22** — **passed.** Owner verdict, 2026-08-20, on the evidence its row
+  names, against the production build served from this branch. The owner also
+  ratified the two calls the spec's open-questions note flagged — the roster
+  badges linking (D5) and the filter's shape as a route family (D4) — so both
+  stand as written.
+- **B8** — **passed.** Green on pull request
+  [#17](https://github.com/mtahamasood/agent-clinic/pull/17), run
+  [32315931204](https://github.com/mtahamasood/agent-clinic/actions/runs/32315931204),
+  in **1m33s** — inside the ten-minute job cap, with
+  `playwright install chromium` behaving as the 2026-08-19 decisions intend.
+  The commit carrying this paragraph triggers one more run, which must also be
+  green: the one named above proved the code, the one after it proves this
+  sentence did no harm.
+
+**Everything holds.** A1–A10, B1–B8, C1–C29, and D1–D7 all pass, and no
+condition in section E does. Phase 4+5 is closed on merge, with the branch
+kept.
